@@ -1,0 +1,8 @@
+##include vtkWindow at beginning 
+
+from vtkWindow import vtkWindow
+
+###in your class running the gui load the window, self.view3D is the name of the QFrame
+
+self.vtk_handle = vtkWindow()
+self.vtk_handle.vtkWidget(self.view3D)
