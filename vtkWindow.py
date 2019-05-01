@@ -93,7 +93,7 @@ class vtkWindow():
             # t = np.matrix([[1.0, 0, 0, -pd_center[0]], [0, 1.0, 0, -pd_center[1]], [0, 0, 1.0, -pd_center[2] + 206 * (1 / 3)], [0, 0, 0, 1]])
             t = np.matrix([[1.0, 0, 0, -pd_center[0]],
                            [0, 1.0, 0, -pd_center[1]],
-                           [0, 0, 1.0, -pd_center[2]],  # 1054.8
+                           [0, 0, 1.0, -pd_center[2]],
                            [0, 0, 0, 1]])
             transform.Identity()
             matrix = help_functions.GetVTKMatrix(R * t)
@@ -168,10 +168,10 @@ class vtkWindow():
 
         pd_center = polydata.GetCenter()
         transform = vtk.vtkTransform()
-        R = help_functions.get_rotation(-90, 0, 0)
+        R = help_functions.get_rotation(0, 0, -90)
         t = np.matrix([[1.0, 0, 0, -pd_center[0]],
                        [0, 1.0, 0, -pd_center[1]],
-                       [0, 0, 1.0, -pd_center[2] + 206 * (1 / 3)],  # 1054.8
+                       [0, 0, 1.0, -pd_center[2]],  # 1054.8
                        [0, 0, 0, 1]])
         transform.Identity()
         matrix = help_functions.GetVTKMatrix(R * t)
@@ -190,7 +190,6 @@ class vtkWindow():
         initial_camera = vtk.vtkCamera()
         initial_camera.DeepCopy(self.initial_camera)
         self.ren.SetActiveCamera(initial_camera)
-
         self.iren.Initialize()
 
     def set_rotation(self, rotation):
@@ -300,8 +299,29 @@ class vtkWindow():
         actor.GetProperty().SetColor(color[0], color[1], color[2])
         ren.AddActor(actor)
 
-    def update(self):
-        self.ren.ResetCamera()
-        self.ren.ResetCameraClippingRange()
-        self.vtkWidget.Initialize()
+    def update(self, full=False):
+        if full:
+            self.ren.ResetCamera()
+            self.ren.ResetCameraClippingRange()
+            self.vtkWidget.Initialize()
         self.iren.Initialize()
+
+    def add_actor(self, actor):
+        self.ren.AddActor(actor)
+
+    def remove_actor(self, actor):
+        self.ren.RemoveActor(actor)
+
+    def add_coordinate_axes(self, length=200, color=[0,1,0]):
+        textActor = self.get_axis_label_actor('x', [length, 0, 0], self.ren)
+        textActor.GetProperty().SetColor(color[0], color[1], color[2])
+        self.add_actor(textActor)
+        textActor = self.get_axis_label_actor('y', [0, length, 0], self.ren)
+        textActor.GetProperty().SetColor(color[0], color[1], color[2])
+        self.add_actor(textActor)
+        textActor = self.get_axis_label_actor('z', [0, 0, length], self.ren)
+        textActor.GetProperty().SetColor(color[0], color[1], color[2])
+        self.add_actor(textActor)
+        self.add_coord([length, 0, 0], color, self.ren, shatRadius=0.02, tipLength=0.1, tipRadius=0.05)
+        self.add_coord([0, length, 0], color, self.ren, shatRadius=0.02, tipLength=0.1, tipRadius=0.05)
+        self.add_coord([0, 0, length], color, self.ren, shatRadius=0.02, tipLength=0.1, tipRadius=0.05)
