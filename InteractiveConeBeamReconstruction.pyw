@@ -349,8 +349,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         return QIcon(iconFilename) if os.path.isfile(iconFilename) else QIcon()
 
     def reset_configuration(self):
+        self.statusBar.showMessage('Initilalising configuration')
         Configuration.initConfig()
         self.load_configuration(filename=self.conrad_xml)
+        self.statusBar.clearMessage()
 
     def load_configuration(self, filename=os.path.join(str(pathlib.Path.home()), 'Conrad.xml')):
         if not os.path.isfile(filename):
@@ -526,6 +528,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.fwd_project()
 
     def fwd_project(self):
+        if self.fwd_proj_slice_by_slice:
+            self.statusBar.showMessage('Perfroming forward projection: {} / {}'.format(self.current_fwd_proj_idx+1, self.num_proj_mats))
+        else:
+            self.statusBar.showMessage('Performing forward projection')
         # TODO: find memory leak in thread
         # only update index to reduce JVM memory (!?)
         # jpype.java.lang.Runtime.getRuntime().gc()
@@ -549,6 +555,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.fwd_project()
             else:
                 self.fwd_proj_uint8 = scale_mat_from_to(self.fwd_proj)
+                self.statusBar.clearMessage()
                 self.filter_fwd_proj()
         else:
             self.fwd_proj = current_proj
@@ -556,6 +563,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.scroll_fwd_proj.setMaximum(self.fwd_proj.shape[0] - 1)
             self.scroll_fwd_proj.setValue(0)
             self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[0])
+            self.statusBar.clearMessage()
             self.filter_fwd_proj()
 
     def filter_fwd_proj(self):
@@ -583,6 +591,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             cosine=True,
             ramlak=True
         )
+        self.statusBar.showMessage('Filtering projections')
         self.filter_thread_cosine.start()
         self.filter_thread_ramlak.start()
         self.filter_thread_cosine_ramlak.start()
@@ -607,6 +616,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.on_filter_cB_changed()
             self.pB_fwd_proj.setDisabled(False)
             self.pB_back_proj.setDisabled(False)
+            self.statusBar.clearMessage()
 
     def on_filter_cB_changed(self):
         if not self.fwd_proj_completed:
@@ -659,6 +669,12 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.back_project()
 
     def back_project(self):
+        if self.back_proj_slice_by_slice:
+            self.statusBar.showMessage('Performing backward projection: slice {} / {}, projection {} / {}'.format(
+                self.current_back_proj_slice_idx, self.back_proj.shape[0], self.current_back_proj_idx, self.num_proj_mats
+            ))
+        else:
+            self.statusBar.showMessage('Performing backward projection')
         # temporary fix for JVM memory leak: JVM garbage collector hint
         jpype.java.lang.System.gc()
         self.back_proj_thread.start()
@@ -692,11 +708,13 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.back_proj_completed = True
                 self.on_plane_sel_changed()
                 self.pB_back_proj.setDisabled(False)
+                self.statusBar.clearMessage()
         else:
             self.generate_viewing_planes()
             self.back_proj_completed = True
             self.on_plane_sel_changed()
             self.pB_back_proj.setDisabled(False)
+            self.statusBar.clearMessage()
 
     def on_plane_sel_changed(self):
         if not self.back_proj_loaded:
@@ -816,6 +834,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.gV_back_proj.fitInView(self.pixmap_back_proj.boundingRect(), QtCore.Qt.KeepAspectRatio)
 
     def on_pB_demo_acquisition(self):
+        cam = self.vtk_handle.ren.GetActiveCamera()
+        cam.SetPosition(-2000, -500, 0)
+        cam.SetViewUp(0, 0, 1)
+        self.vtk_handle.ren.ResetCamera()
         self.timeline_anim = QTimeLine()
         self.timeline_anim.setCurveShape(QTimeLine.LinearCurve)
         self.timeline_anim.setDuration(4000)
