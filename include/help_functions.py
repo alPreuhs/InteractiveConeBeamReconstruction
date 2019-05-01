@@ -5,9 +5,9 @@ import vtk
 
 def scale_mat_from_to(mat, from_min=None, from_max=None, to_min=0, to_max=255, dtype=np.uint8):
     if from_min is None:
-        from_min = mat.min()
+        from_min = np.min(mat)
     if from_max is None:
-        from_max = mat.max()
+        from_max = np.max(mat)
     return np.interp(mat, (from_min, from_max), (to_min, to_max)).astype(dtype)
 
 def get_rotation(rot_angle_x, rot_angle_y, rot_angle_z):

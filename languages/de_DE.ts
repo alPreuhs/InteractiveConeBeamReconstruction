@@ -121,7 +121,7 @@ N</translation>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="525"/>
         <source> mm</source>
-        <translation type="unfinished"> mm</translation>
+        <translation> mm</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="492"/>
@@ -146,7 +146,7 @@ N</translation>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="497"/>
         <source>No. of projections</source>
-        <translation type="unfinished">Anzahl Projektionen</translation>
+        <translation>Anzahl Projektionen</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="498"/>
@@ -156,7 +156,7 @@ N</translation>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="508"/>
         <source> px</source>
-        <translation type="unfinished"> px</translation>
+        <translation> px</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="500"/>
@@ -166,7 +166,7 @@ N</translation>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="502"/>
         <source>Rotation axis</source>
-        <translation type="unfinished">Rotationsachse</translation>
+        <translation>Rotationsachse</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="503"/>
@@ -176,17 +176,17 @@ N</translation>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="504"/>
         <source>Detector</source>
-        <translation type="unfinished">Detektor</translation>
+        <translation>Detektor</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="505"/>
         <source>Detector size x</source>
-        <translation type="unfinished">Detektorgröße x</translation>
+        <translation>Detektorgröße x</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="507"/>
         <source>Detector size y</source>
-        <translation type="unfinished">Detektorgröße y</translation>
+        <translation>Detektorgröße y</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="509"/>
@@ -201,27 +201,27 @@ N</translation>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="513"/>
         <source>Volume</source>
-        <translation type="unfinished">Volumen</translation>
+        <translation>Volumen</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="514"/>
         <source>Size x</source>
-        <translation type="unfinished">Größe x</translation>
+        <translation>Größe x</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="519"/>
         <source> voxel</source>
-        <translation type="unfinished"> Voxel</translation>
+        <translation> Voxel</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="516"/>
         <source>Size y</source>
-        <translation type="unfinished">Größe y</translation>
+        <translation>Größe y</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="518"/>
         <source>Size z</source>
-        <translation type="unfinished">Größe z</translation>
+        <translation>Größe z</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="520"/>
@@ -256,7 +256,7 @@ N</translation>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="532"/>
         <source>Reset</source>
-        <translation type="unfinished">Zurücksetzen</translation>
+        <translation>Zurücksetzen</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="554"/>
@@ -266,27 +266,27 @@ N</translation>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="564"/>
         <source>Load Configuration</source>
-        <translation type="unfinished">Konfiguration laden</translation>
+        <translation>Konfiguration laden</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="565"/>
         <source>Save Configuration as...</source>
-        <translation type="unfinished">Konfiguration speichern unter...</translation>
+        <translation>Konfiguration speichern unter...</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="526"/>
         <source>Filters</source>
-        <translation type="unfinished">Filter</translation>
+        <translation>Filter</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="527"/>
         <source>Cosine</source>
-        <translation type="unfinished">Cosinus</translation>
+        <translation>Cosinus</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="528"/>
         <source>Ramlak</source>
-        <translation type="unfinished"></translation>
+        <translation>Ramlak</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="533"/>

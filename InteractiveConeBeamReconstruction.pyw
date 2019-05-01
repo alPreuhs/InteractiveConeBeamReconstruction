@@ -520,14 +520,12 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.current_fwd_proj_idx = None
             self.fwd_proj_slice_by_slice = False
         else:
-            self.current_fwd_proj_idx = -1
+            self.current_fwd_proj_idx = 0
             self.fwd_proj_slice_by_slice = True
+        self.fwd_proj_thread.proj_idx = self.current_fwd_proj_idx
         self.fwd_project()
 
     def fwd_project(self):
-        if self.fwd_proj_slice_by_slice:
-            self.current_fwd_proj_idx += 1
-            self.fwd_proj_thread.proj_idx = self.current_fwd_proj_idx
         # TODO: find memory leak in thread
         # only update index to reduce JVM memory (!?)
         # jpype.java.lang.Runtime.getRuntime().gc()
@@ -546,6 +544,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.scroll_fwd_proj.setValue(self.current_fwd_proj_idx)
             self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[self.current_fwd_proj_idx])
             if self.current_fwd_proj_idx < self.num_proj_mats - 1:
+                self.current_fwd_proj_idx += 1
+                self.fwd_proj_thread.proj_idx = self.current_fwd_proj_idx
                 self.fwd_project()
             else:
                 self.fwd_proj_uint8 = scale_mat_from_to(self.fwd_proj)
@@ -653,21 +653,12 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.current_back_proj_slice_idx = None
         else:
             self.back_proj_slice_by_slice = True
-            self.current_back_proj_idx = -1
+            self.current_back_proj_idx = 0
             self.current_back_proj_slice_idx = 0
-        self.back_proj_thread.init(fwd_proj=self.fwd_proj_filtered, use_cl=self.cB_use_cl.isChecked())
+        self.back_proj_thread.init(fwd_proj=self.fwd_proj_filtered, use_cl=self.cB_use_cl.isChecked(), proj_idx=self.current_back_proj_idx, slice_idx=self.current_back_proj_slice_idx)
         self.back_project()
 
     def back_project(self):
-        if self.back_proj_slice_by_slice:
-            if self.current_back_proj_idx < self.num_proj_mats - 1:
-                self.current_back_proj_idx += 1
-            else:
-                self.current_back_proj_idx = 0
-                self.current_back_proj_slice_idx += 1
-            print('slice: ', self.current_back_proj_slice_idx, 'proj: ', self.current_back_proj_idx)
-            self.back_proj_thread.proj_idx = self.current_back_proj_idx
-            self.back_proj_thread.slice_idx = self.current_back_proj_slice_idx
         # temporary fix for JVM memory leak: JVM garbage collector hint
         jpype.java.lang.System.gc()
         self.back_proj_thread.start()
@@ -685,6 +676,14 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         if self.back_proj_slice_by_slice:
             # TODO: show correct plane --> generate viewing planes
             self.display_image(self.gV_back_proj, self.back_proj_uint8[self.current_back_proj_slice_idx])
+            if self.current_back_proj_idx < self.num_proj_mats - 1:
+                self.current_back_proj_idx += 1
+            else:
+                self.current_back_proj_idx = 0
+                self.current_back_proj_slice_idx += 1
+            print('slice: ', self.current_back_proj_slice_idx, 'proj: ', self.current_back_proj_idx)
+            self.back_proj_thread.proj_idx = self.current_back_proj_idx
+            self.back_proj_thread.slice_idx = self.current_back_proj_slice_idx
             if self.current_back_proj_idx < self.num_proj_mats - 1 or self.current_back_proj_slice_idx < \
                     self.fwd_proj.shape[0] - 1:
                 self.back_project()

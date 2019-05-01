@@ -44,7 +44,7 @@
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
-         <layout class="QFormLayout" name="formLayout">
+         <layout class="QFormLayout" name="fLayout_sdd_sid_simple">
           <item row="0" column="0">
            <widget class="QLabel" name="label_sdd_simple">
             <property name="text">
@@ -60,7 +60,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <layout class="QHBoxLayout" name="hLayout_sdd_simple">
             <item>
              <widget class="QDoubleSpinBox" name="sB_sdd_simple">
               <property name="suffix">
@@ -84,7 +84,7 @@
            </layout>
           </item>
           <item row="1" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_7">
+           <layout class="QHBoxLayout" name="hLayout_sid_simple">
             <item>
              <widget class="QDoubleSpinBox" name="sB_sid_simple">
               <property name="suffix">
@@ -116,7 +116,7 @@
          </layout>
         </item>
         <item>
-         <layout class="QFormLayout" name="formLayout_2">
+         <layout class="QFormLayout" name="fLayout_det_size">
           <item row="1" column="0">
            <widget class="QLabel" name="label_det_width_simple">
             <property name="text">
@@ -125,7 +125,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <layout class="QHBoxLayout" name="hLayout_det_width_simple">
             <item>
              <widget class="QSpinBox" name="sB_det_width_simple">
               <property name="suffix">
@@ -156,7 +156,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
+           <layout class="QHBoxLayout" name="hLayout_det_height_simple">
             <item>
              <widget class="QSpinBox" name="sB_det_height_simple">
               <property name="suffix">
@@ -1102,6 +1102,7 @@ border: none</string>
    <addaction name="menuFile"/>
    <addaction name="menuLanguage"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="action_open_3D_data">
    <property name="icon">
     <iconset>
