@@ -434,6 +434,9 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.pB_demo = QtWidgets.QPushButton(self.centralwidget)
         self.pB_demo.setObjectName("pB_demo")
         self.hLayout_3D_btm.addWidget(self.pB_demo)
+        self.pB_reset_view = QtWidgets.QPushButton(self.centralwidget)
+        self.pB_reset_view.setObjectName("pB_reset_view")
+        self.hLayout_3D_btm.addWidget(self.pB_reset_view)
         self.vLayout_3D.addLayout(self.hLayout_3D_btm)
         self.hLayout_reco.addLayout(self.vLayout_3D)
         self.vLayout_scan_btn = QtWidgets.QVBoxLayout()
@@ -648,6 +651,7 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.config_tabs.setTabText(self.config_tabs.indexOf(self.config_tab_advanced), _translate("Interactive_Cone_Beam_Reconstruction", "Advanced"))
         self.label_angles.setText(_translate("Interactive_Cone_Beam_Reconstruction", "LAO/RAO: 0°    CRAN/CAUD: 0°"))
         self.pB_demo.setText(_translate("Interactive_Cone_Beam_Reconstruction", "Demo acquisition"))
+        self.pB_reset_view.setText(_translate("Interactive_Cone_Beam_Reconstruction", "Reset view"))
         self.pB_fwd_proj.setText(_translate("Interactive_Cone_Beam_Reconstruction", "S\n"
 "C\n"
 "A\n"

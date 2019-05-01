@@ -122,14 +122,14 @@ class vtkWindow():
         self.initial_camera = vtk.vtkCamera()
         # self.initial_camera.SetPosition(100, 0, 1000)
         self.initial_camera.DeepCopy(self.ren.GetActiveCamera())
+        self.reset_view()
+
+    def reset_view(self, x=-2000, y=-500, z=0):
         cam = self.ren.GetActiveCamera()
-        cam.SetPosition(-2000, -500, 0)
-        # cam.SetFocalPoint(0,0,0)
+        cam.SetPosition(x, y, z)
         cam.SetViewUp(0, 0, 1)
-        # cam.Azimuth(0)
-        # cam.Zoom(0.1)
-        # cam.Dolly(0.5)
         self.ren.ResetCamera()
+        self.update()
 
     @staticmethod
     def get_polydata(filename):

@@ -149,6 +149,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.pB_back_proj_play_pause.clicked.connect(self.back_proj_play_pause)
         self.pB_reset_config.clicked.connect(self.reset_configuration)
         self.pB_demo.clicked.connect(self.on_pB_demo_acquisition)
+        self.pB_reset_view.clicked.connect(self.reset_view)
 
         self.fwd_proj_playing = False
         self.back_proj_playing = False
@@ -157,8 +158,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.icon_pause = self.get_icon('pause')
 
         self.comboBox_plane_sel.currentTextChanged.connect(self.on_plane_sel_changed)
-
-
 
         self.fwd_proj_thread = forwardProjectionThread()
         self.fwd_proj_thread.finished.connect(self.on_fwd_proj_finished)
@@ -197,6 +196,9 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         #self.MainWindow.showFullScreen()
         self.MainWindow.showMaximized()
         self.resizeEvent()
+
+    def reset_view(self):
+        self.vtk_handle.reset_view()
 
     def on_sB_sdd_simple(self):
         val = self.sB_sdd_simple.value()
@@ -834,10 +836,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.gV_back_proj.fitInView(self.pixmap_back_proj.boundingRect(), QtCore.Qt.KeepAspectRatio)
 
     def on_pB_demo_acquisition(self):
-        cam = self.vtk_handle.ren.GetActiveCamera()
-        cam.SetPosition(-2000, -500, 0)
-        cam.SetViewUp(0, 0, 1)
-        self.vtk_handle.ren.ResetCamera()
         self.timeline_anim = QTimeLine()
         self.timeline_anim.setCurveShape(QTimeLine.LinearCurve)
         self.timeline_anim.setDuration(4000)

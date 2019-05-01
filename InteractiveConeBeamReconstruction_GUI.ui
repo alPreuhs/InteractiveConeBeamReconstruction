@@ -846,6 +846,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="pB_reset_view">
+            <property name="text">
+             <string>Reset view</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
