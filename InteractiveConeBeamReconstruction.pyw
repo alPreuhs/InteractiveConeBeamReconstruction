@@ -138,6 +138,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.action_load_config.triggered.connect(lambda _: self.load_configuration(filename=''))
         self.action_save_config.triggered.connect(lambda _: self.save_configuration(filename=''))
 
+        self.current_language = 'en_GB'
+
         self.scroll_fwd_proj.sliderMoved.connect(self.on_scroll_fwd_proj)
         self.scroll_fwd_proj.valueChanged.connect(self.on_scroll_fwd_proj)
         self.scroll_back_proj.sliderMoved.connect(self.on_scroll_back_proj)
@@ -351,15 +353,21 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         return QIcon(iconFilename) if os.path.isfile(iconFilename) else QIcon()
 
     def reset_configuration(self):
-        self.statusBar.showMessage('Initilalising configuration')
+        msg = 'Initilalising configuration'
+        if self.current_language == 'de_DE':
+            msg = 'Initialisiere Konfiguration'
+        self.statusBar.showMessage(msg)
         Configuration.initConfig()
         self.load_configuration(filename=self.conrad_xml)
         self.statusBar.clearMessage()
 
     def load_configuration(self, filename=os.path.join(str(pathlib.Path.home()), 'Conrad.xml')):
         if not os.path.isfile(filename):
-            filename, _ = QFileDialog.getOpenFileName(self.centralwidget, "Open CONRAD configuration",
-                                                      self.last_opened_dir_xml, "CONRAD (*.xml)")
+            inf = 'Open CONRAD configuration'
+            if self.current_language == 'de_DE':
+                inf = 'CONRAD-Konfiguration öffnen'
+            filename, _ = QFileDialog.getOpenFileName(self.centralwidget, inf,
+                                                      self.last_opened_dir_xml, 'CONRAD (*.xml)')
             if not len(filename):
                 return
             self.last_opened_dir_xml = os.path.split(filename)[0]
@@ -396,13 +404,19 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def save_configuration(self, filename=os.path.join(str(pathlib.Path.home()), 'Conrad.xml')):
         if self.sB_sdd.value() <= self.sB_sid.value():
+            txt = 'Source to detector distance must be larger than source to patient distance.'
+            if self.current_language == 'de_DE':
+                txt = 'Abstand Quelle zu Detektor muss größer sein als Abstand Quelle zu Patient'
             self.msg_window(windowTitle='Error',
-                            text='Source to detector distance must be larger than source to patient distance.',
+                            text=txt,
                             icon=self.get_icon('warning'))
             return
         if not filename:
-            filename, _ = QFileDialog.getSaveFileName(self.centralwidget, "Save CONRAD configuration as",
-                                                      self.last_opened_dir_xml, "CONRAD (*.xml)")
+            inf = 'Save CONRAD configuration as'
+            if self.current_language == 'de_DE':
+                inf = 'CONRAD-Konfiguration speichern unter'
+            filename, _ = QFileDialog.getSaveFileName(self.centralwidget, inf,
+                                                      self.last_opened_dir_xml, 'CONRAD (*.xml)')
             if not len(filename):
                 return
             self.last_opened_dir_xml = os.path.split(filename)[0]
@@ -530,10 +544,15 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.fwd_project()
 
     def fwd_project(self):
+        msg = 'Perfroming forward projection'
+        if self.current_language == 'de_DE':
+            msg = 'Vorwärtsprojektion'
         if self.fwd_proj_slice_by_slice:
-            self.statusBar.showMessage('Perfroming forward projection: {} / {}'.format(self.current_fwd_proj_idx+1, self.num_proj_mats))
+            self.statusBar.showMessage('{message}: {current_projection} / {num_projections}'.format(
+                message=msg, current_projection=self.current_fwd_proj_idx+1, num_projections=self.num_proj_mats)
+            )
         else:
-            self.statusBar.showMessage('Performing forward projection')
+            self.statusBar.showMessage(msg)
         # TODO: find memory leak in thread
         # only update index to reduce JVM memory (!?)
         # jpype.java.lang.Runtime.getRuntime().gc()
@@ -547,7 +566,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         current_proj = self.fwd_proj_thread.get_fwd_proj()
         if self.fwd_proj_slice_by_slice:
             self.fwd_proj[self.current_fwd_proj_idx] = current_proj
-            self.fwd_proj_uint8[self.current_fwd_proj_idx] = scale_mat_from_to(current_proj)
+            self.fwd_proj_uint8[self.current_fwd_proj_idx] = scale_mat_from_to(current_proj) # TODO: scaling every projection individually yields different result than scaling all projctions
             self.scroll_fwd_proj.setMaximum(self.current_fwd_proj_idx)
             self.scroll_fwd_proj.setValue(self.current_fwd_proj_idx)
             self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[self.current_fwd_proj_idx])
@@ -593,7 +612,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             cosine=True,
             ramlak=True
         )
-        self.statusBar.showMessage('Filtering projections')
+        msg = 'Filtering projections'
+        if self.current_language == 'de_DE':
+            msg = 'Projektionen werden gefiltert'
+        self.statusBar.showMessage(msg)
         self.filter_thread_cosine.start()
         self.filter_thread_ramlak.start()
         self.filter_thread_cosine_ramlak.start()
@@ -644,8 +666,13 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         jpype.java.lang.System.gc()
         # self.save_configuration(filename=self.conrad_xml)
         if not self.fwd_proj_completed:
-            self.msg_window(windowTitle='Reconstruction not possible',
-                            text="First perform the forward projection by clicking on 'Scan'",
+            title = 'Reconstruction not possible'
+            msg = "First perform the forward projection by clicking on 'Scan'"
+            if self.current_language == 'de_DE':
+                title = 'Rekonstruktion nicht möglich'
+                msg = "Führe erst die Vorwärtsprojektion über den Button 'Röntgen'"
+            self.msg_window(windowTitle=title,
+                            text=msg,
                             icon=self.get_icon('warning'))
             return
         self.pB_back_proj.setDisabled(True)
@@ -671,12 +698,21 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.back_project()
 
     def back_project(self):
+        msg = 'Performing backward projection'
+        if self.current_language == 'de_DE':
+            msg = 'Rückprojektion'
         if self.back_proj_slice_by_slice:
-            self.statusBar.showMessage('Performing backward projection: slice {} / {}, projection {} / {}'.format(
-                self.current_back_proj_slice_idx, self.back_proj.shape[0], self.current_back_proj_idx, self.num_proj_mats
+            slice = 'slice'
+            proj = 'projection'
+            if self.current_language == 'de_DE':
+                slice = 'Schicht'
+                proj = 'Projektion'
+            self.statusBar.showMessage('{message}: {slice} {current_slice} / {num_slices}, {projection} {current_projection} / {num_projections}'.format(
+                message=msg, slice=slice, current_slice=self.current_back_proj_slice_idx+1, num_slices=self.back_proj.shape[0],
+                projection=proj, current_projection=self.current_back_proj_idx+1, num_projections=self.num_proj_mats
             ))
         else:
-            self.statusBar.showMessage('Performing backward projection')
+            self.statusBar.showMessage(msg)
         # temporary fix for JVM memory leak: JVM garbage collector hint
         jpype.java.lang.System.gc()
         self.back_proj_thread.start()
@@ -817,7 +853,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.display_image(self.gV_back_proj, self.back_proj_disp[self.scroll_back_proj.value()])
 
     def open_3D_Data(self): # TODO
-        filename, _ = QFileDialog.getOpenFileName(self.centralwidget, "Open file", self.last_opened_dir_3D,
+        inf = 'Open file'
+        if self.current_language == 'de_DE':
+            inf = 'Datei öffnen'
+        filename, _ = QFileDialog.getOpenFileName(self.centralwidget, inf, self.last_opened_dir_3D,
                                                   "(*.stl *.ply *.vtp *.obj *.vtk *.vti *.g)")
         if not len(filename):
             return
@@ -830,6 +869,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         if self.translator.load(os.path.join("languages", lang + ".qm")):
             self.app.installTranslator(self.translator)
         self.retranslateUi(self.MainWindow)
+        self.current_language = lang
 
     def resizeEvent(self):
         self.gV_fwd_proj.fitInView(self.pixmap_fwd_proj.boundingRect(), QtCore.Qt.KeepAspectRatio)
