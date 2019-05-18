@@ -2,12 +2,11 @@
 
 # Form implementation generated from reading ui file 'InteractiveConeBeamReconstruction_GUI.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.1
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_Interactive_Cone_Beam_Reconstruction(object):
     def setupUi(self, Interactive_Cone_Beam_Reconstruction):
@@ -578,10 +577,18 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         icon4.addPixmap(QtGui.QPixmap("icons/save.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.action_save_config.setIcon(icon4)
         self.action_save_config.setObjectName("action_save_config")
+        self.action_voxelize = QtWidgets.QAction(Interactive_Cone_Beam_Reconstruction)
+        self.action_voxelize.setObjectName("action_voxelize")
+        self.action_set_phantom = QtWidgets.QAction(Interactive_Cone_Beam_Reconstruction)
+        self.action_set_phantom.setObjectName("action_set_phantom")
         self.menuFile.addAction(self.action_open_3D_data)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.action_load_config)
         self.menuFile.addAction(self.action_save_config)
+        self.menuFile.addSeparator()
+        self.menuFile.addAction(self.action_voxelize)
+        self.menuFile.addSeparator()
+        self.menuFile.addAction(self.action_set_phantom)
         self.menuLanguage.addAction(self.action_change_lang_en_GB)
         self.menuLanguage.addAction(self.action_change_lang_de_DE)
         self.menubar.addAction(self.menuFile.menuAction())
@@ -683,8 +690,8 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.action_change_lang_de_DE.setText(_translate("Interactive_Cone_Beam_Reconstruction", "&Deutsch"))
         self.action_load_config.setText(_translate("Interactive_Cone_Beam_Reconstruction", "&Load Configuration"))
         self.action_save_config.setText(_translate("Interactive_Cone_Beam_Reconstruction", "&Save Configuration as..."))
-
-
+        self.action_voxelize.setText(_translate("Interactive_Cone_Beam_Reconstruction", "Voxelize Mesh"))
+        self.action_set_phantom.setText(_translate("Interactive_Cone_Beam_Reconstruction", "Set Phantom array"))
 
 
 if __name__ == "__main__":
@@ -695,3 +702,4 @@ if __name__ == "__main__":
     ui.setupUi(Interactive_Cone_Beam_Reconstruction)
     Interactive_Cone_Beam_Reconstruction.show()
     sys.exit(app.exec_())
+

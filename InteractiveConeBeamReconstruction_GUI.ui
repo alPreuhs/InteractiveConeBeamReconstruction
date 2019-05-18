@@ -196,7 +196,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="config_tab_advanced" native="true">
+      <widget class="QWidget" name="config_tab_advanced">
        <attribute name="title">
         <string>Advanced</string>
        </attribute>
@@ -1098,6 +1098,10 @@ border: none</string>
     <addaction name="separator"/>
     <addaction name="action_load_config"/>
     <addaction name="action_save_config"/>
+    <addaction name="separator"/>
+    <addaction name="action_voxelize"/>
+    <addaction name="separator"/>
+    <addaction name="action_set_phantom"/>
    </widget>
    <widget class="QMenu" name="menuLanguage">
     <property name="title">
@@ -1156,6 +1160,16 @@ border: none</string>
    </property>
    <property name="text">
     <string>&amp;Save Configuration as...</string>
+   </property>
+  </action>
+  <action name="action_voxelize">
+   <property name="text">
+    <string>Voxelize Mesh</string>
+   </property>
+  </action>
+  <action name="action_set_phantom">
+   <property name="text">
+    <string>Set Phantom array</string>
    </property>
   </action>
  </widget>

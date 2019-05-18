@@ -10,6 +10,31 @@ def scale_mat_from_to(mat, from_min=None, from_max=None, to_min=0, to_max=255, d
         from_max = np.max(mat)
     return np.interp(mat, (from_min, from_max), (to_min, to_max)).astype(dtype)
 
+def crop(array):
+    xmin = ymin = zmin = np.max(array.shape)
+    xmax = ymax = zmax = 0
+    for z in range(array.shape[0]):
+        for y in range(array.shape[1]):
+            for x in range(array.shape[2]):
+                if array[z,y,x]:
+                    if x < xmin:
+                        xmin = x
+                    elif x > xmax:
+                        xmax = x
+                    if y < ymin:
+                        ymin = y
+                    elif y > ymax:
+                        ymax = y
+                    if z < zmin:
+                        zmin = z
+                    elif z > zmax:
+                        zmax = z
+    return array[zmin:zmax,ymin:ymax,xmin:xmax]
+
+def turn_upside_down(array):
+    flipped = np.rot90(array, 2, (1, 2))
+    return np.rot90(flipped, 2, (0, 2))
+
 def get_rotation(rot_angle_x, rot_angle_y, rot_angle_z):
     def s(x):
         return math.sin(math.radians(x))

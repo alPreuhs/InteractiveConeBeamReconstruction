@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtCore import Qt, QTranslator, pyqtSignal, pyqtSlot, QThread, QTimeLine, qFatal
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QGraphicsScene, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QGraphicsScene, QMessageBox, QDialog
 from PyQt5.QtGui import QImage, QPixmap, QIcon
 import numpy as np
 from qimage2ndarray import array2qimage
@@ -8,9 +8,10 @@ from stl import mesh
 import os
 import pathlib
 from InteractiveConeBeamReconstruction_GUI import Ui_Interactive_Cone_Beam_Reconstruction
+from VoxelizeWindow import VoxelizeMainWindow, VoxelizeWindow
 from vtkWindow import vtkWindow
 import traceback
-from include.help_functions import scale_mat_from_to
+from include.help_functions import scale_mat_from_to, crop, turn_upside_down
 from Math.projection import create_default_projection_matrix, get_rotation_matrix_by_axis_and_angle
 from Math.vtk_proj_matrix import vtk_proj_matrix
 import jpype
@@ -73,20 +74,19 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.pixmap_fwd_proj = QGraphicsPixmapItem()
         self.pixmap_back_proj = QGraphicsPixmapItem()
 
-        from mesh_vox import read_and_reshape_stl, voxelize  # https://github.com/Septaris/mesh_vox
-        input_path = os.path.join('include', 'Head_Phantom.stl')
-        resolution = 256  # 100
-        voxels, bounding_box = np.zeros(shape=(resolution, resolution, resolution)), np.zeros(
-            shape=(resolution, resolution, resolution))
         if False:
+            from mesh_vox import read_and_reshape_stl, voxelize  # https://github.com/Septaris/mesh_vox
+            input_path = os.path.join('include', 'Head_Phantom.stl')
+            resolution = 256  # 100
             mesh, bounding_box = read_and_reshape_stl(input_path, resolution)
             voxels, bounding_box = voxelize(mesh, bounding_box)
-            np.save('voxels256.npy', voxels)
-            np.save('bounding_box256.npy', bounding_box)
+            np.save('voxels256.npy', turn_upside_down(crop(voxels)))
+            #np.save('bounding_box256.npy', bounding_box)
         else:
-            voxels = np.load('voxels256.npy')
-            bounding_box = np.load('bounding_box256.npy')
-        # self.phantom = voxels
+            #voxels = np.load('voxels256.npy')
+            voxels = np.load('voxelsCropped.npy')
+            #bounding_box = np.load('bounding_box256.npy')
+        self.phantom = voxels
 
         self.fwd_proj_loaded = False
         self.back_proj_loaded = False
@@ -131,6 +131,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.action_change_lang_de_DE.triggered.connect(lambda _: self.change_language('de_DE'))
         self.action_load_config.triggered.connect(lambda _: self.load_configuration(filename=''))
         self.action_save_config.triggered.connect(lambda _: self.save_configuration(filename=''))
+        self.action_voxelize.triggered.connect(self.on_action_voxelize)
+        self.action_set_phantom.triggered.connect(self.on_action_set_phantom)
 
         self.current_language = 'en_GB'
 
@@ -199,6 +201,25 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         #self.MainWindow.showFullScreen()
         self.MainWindow.showMaximized()
         self.resizeEvent()
+
+    def on_action_set_phantom(self):
+        phantom_filename, _ = QFileDialog.getOpenFileName(self.centralwidget, 'Choose phantom file',
+                                                          self.last_opened_dir_3D, 'Numpy (*.npy;*.npz)')
+        if not phantom_filename:
+            return
+        phantom = np.load(phantom_filename)
+        ext = os.path.splitext(phantom_filename)[1].lower()
+        if ext == '.npy':
+            self.phantom = phantom
+        elif ext == '.npz':
+            self.phantom = phantom[phantom.files[0]]
+
+    def on_action_voxelize(self):
+        app = QDialog()
+        MainWindow = VoxelizeMainWindow()
+        prog = VoxelizeWindow(MainWindow, app)
+        MainWindow.show()
+        MainWindow.exec_()
 
     def change_language(self, lang):
         if self.translator.load(os.path.join('languages', lang + '.qm')):
@@ -518,19 +539,17 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def demo_acquisition(self):
         self.set_vtk_proj_mat(rot=self.timeline_anim.currentFrame()*self.sB_ang_incr.value())
-        # w2if = vtk.vtkWindowToImageFilter()
-        # w2if.SetInput(self.vtk_handle.vtkWidget.GetRenderWindow())
-        # w2if.Update()
-        # writer = vtk.vtkPNGWriter()
-        # writer.SetFileName("splash_screen_{:02d}.png".format(self.timeline_anim.currentFrame()))
-        # writer.SetInput(w2if.GetOutput())
-        # writer.Write()
 
     def on_pB_fwd_proj_clicked(self):
         self.pB_fwd_proj.setDisabled(True)
         self.pB_back_proj.setDisabled(True)
         # temporary fix for JVM memory leak: JVM garbage collector hint
         jpype.java.lang.System.gc()
+
+        self.sB_reco_dim_z.setValue(self.phantom.shape[0])
+        self.sB_reco_dim_y.setValue(self.phantom.shape[1])
+        self.sB_reco_dim_x.setValue(self.phantom.shape[2])
+
         self.save_configuration(filename=self.conrad_xml)
         self.fwd_proj_completed = False
         self.fwd_proj_loaded = False
@@ -681,7 +700,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             msg = "First perform the forward projection by clicking on 'Scan'"
             if self.current_language == 'de_DE':
                 title = 'Rekonstruktion nicht möglich'
-                msg = "Führe erst die Vorwärtsprojektion über den Button 'Röntgen'"
+                msg = "Führe erst die Vorwärtsprojektion über den Button 'Röntgen' durch"
             self.msg_window(windowTitle=title,
                             text=msg,
                             icon=self.get_icon('warning'))
@@ -751,14 +770,14 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.back_project()
             else:
                 self.generate_viewing_planes()
-                self.back_proj_completed = True
                 self.on_plane_sel_changed()
+                self.back_proj_completed = True
                 self.pB_back_proj.setDisabled(False)
                 self.statusBar.clearMessage()
         else:
             self.generate_viewing_planes()
-            self.back_proj_completed = True
             self.on_plane_sel_changed()
+            self.back_proj_completed = True
             self.pB_back_proj.setDisabled(False)
             self.statusBar.clearMessage()
 
