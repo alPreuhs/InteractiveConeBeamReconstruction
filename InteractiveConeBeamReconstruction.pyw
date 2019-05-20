@@ -141,13 +141,14 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.scroll_back_proj.sliderMoved.connect(self.on_scroll_back_proj)
         self.scroll_back_proj.valueChanged.connect(self.on_scroll_back_proj)
 
-        self.pB_fwd_proj.clicked.connect(self.on_pB_fwd_proj_clicked)
-        self.pB_back_proj.clicked.connect(self.on_pB_back_proj_clicked)
+        self.pB_fwd_proj.clicked.connect(self.on_pB_fwd_proj)
+        self.pB_back_proj.clicked.connect(self.on_pB_back_proj)
         self.pB_fwd_proj_play_pause.clicked.connect(self.fwd_proj_play_pause)
         self.pB_back_proj_play_pause.clicked.connect(self.back_proj_play_pause)
         self.pB_reset_config.clicked.connect(self.reset_configuration)
         self.pB_demo.clicked.connect(self.on_pB_demo_acquisition)
         self.pB_reset_view.clicked.connect(self.reset_view)
+        self.pB_set_reco_dim.clicked.connect(lambda _: self.set_reco_dim(x=None, y=None, z=None))
 
         self.fwd_proj_playing = False
         self.back_proj_playing = False
@@ -201,6 +202,14 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         #self.MainWindow.showFullScreen()
         self.MainWindow.showMaximized()
         self.resizeEvent()
+
+    def set_reco_dim(self, x=None, y=None, z=None):
+        if x is None: x = self.phantom.shape[2]
+        if y is None: y = self.phantom.shape[1]
+        if z is None: z = self.phantom.shape[0]
+        self.sB_reco_dim_x.setValue(x)
+        self.sB_reco_dim_y.setValue(y)
+        self.sB_reco_dim_z.setValue(z)
 
     def on_action_set_phantom(self):
         phantom_filename, _ = QFileDialog.getOpenFileName(self.centralwidget, 'Choose phantom file',
@@ -540,16 +549,11 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
     def demo_acquisition(self):
         self.set_vtk_proj_mat(rot=self.timeline_anim.currentFrame()*self.sB_ang_incr.value())
 
-    def on_pB_fwd_proj_clicked(self):
+    def on_pB_fwd_proj(self):
         self.pB_fwd_proj.setDisabled(True)
         self.pB_back_proj.setDisabled(True)
         # temporary fix for JVM memory leak: JVM garbage collector hint
         jpype.java.lang.System.gc()
-
-        self.sB_reco_dim_z.setValue(self.phantom.shape[0])
-        self.sB_reco_dim_y.setValue(self.phantom.shape[1])
-        self.sB_reco_dim_x.setValue(self.phantom.shape[2])
-
         self.save_configuration(filename=self.conrad_xml)
         self.fwd_proj_completed = False
         self.fwd_proj_loaded = False
@@ -691,7 +695,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.fwd_proj_filtered_uint8 = scale_mat_from_to(self.fwd_proj)
         self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered_uint8[self.scroll_fwd_proj.value()])
 
-    def on_pB_back_proj_clicked(self):
+    def on_pB_back_proj(self):
         # temporary fix for JVM memory leak: JVM garbage collector hint
         jpype.java.lang.System.gc()
         # self.save_configuration(filename=self.conrad_xml)
@@ -705,6 +709,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                             text=msg,
                             icon=self.get_icon('warning'))
             return
+        self.pb_fwd_proj.setDisabled(True)
         self.pB_back_proj.setDisabled(True)
         self.back_proj_completed = False
         self.back_proj_loaded = False
@@ -772,12 +777,14 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.generate_viewing_planes()
                 self.on_plane_sel_changed()
                 self.back_proj_completed = True
+                self.pB_fwd_proj.setDisabled(False)
                 self.pB_back_proj.setDisabled(False)
                 self.statusBar.clearMessage()
         else:
             self.generate_viewing_planes()
             self.on_plane_sel_changed()
             self.back_proj_completed = True
+            self.pB_fwd_proj.setDisabled(False)
             self.pB_back_proj.setDisabled(False)
             self.statusBar.clearMessage()
 

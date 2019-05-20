@@ -547,73 +547,84 @@
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
-            <layout class="QFormLayout" name="fLayout_volume_size">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_reco_dim_x">
+            <layout class="QVBoxLayout" name="vLayout_reco_dim">
+             <item>
+              <layout class="QFormLayout" name="fLayout_volume_size">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_reco_dim_x">
+                 <property name="text">
+                  <string>Size x</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QSpinBox" name="sB_reco_dim_x">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="suffix">
+                  <string> voxel</string>
+                 </property>
+                 <property name="maximum">
+                  <number>4096</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_reco_dim_y">
+                 <property name="text">
+                  <string>Size y</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QSpinBox" name="sB_reco_dim_y">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="suffix">
+                  <string> voxel</string>
+                 </property>
+                 <property name="maximum">
+                  <number>4096</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_reco_dim_z">
+                 <property name="text">
+                  <string>Size z</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QSpinBox" name="sB_reco_dim_z">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="suffix">
+                  <string> voxel</string>
+                 </property>
+                 <property name="maximum">
+                  <number>4096</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pB_set_reco_dim">
                <property name="text">
-                <string>Size x</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QSpinBox" name="sB_reco_dim_x">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="suffix">
-                <string> voxel</string>
-               </property>
-               <property name="maximum">
-                <number>4096</number>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_reco_dim_y">
-               <property name="text">
-                <string>Size y</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QSpinBox" name="sB_reco_dim_y">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="suffix">
-                <string> voxel</string>
-               </property>
-               <property name="maximum">
-                <number>4096</number>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_reco_dim_z">
-               <property name="text">
-                <string>Size z</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QSpinBox" name="sB_reco_dim_z">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="suffix">
-                <string> voxel</string>
-               </property>
-               <property name="maximum">
-                <number>4096</number>
+                <string>Set to phantom size</string>
                </property>
               </widget>
              </item>
