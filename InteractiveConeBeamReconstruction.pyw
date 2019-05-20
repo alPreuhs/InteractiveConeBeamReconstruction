@@ -69,24 +69,13 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.conrad_config = Configuration.getGlobalConfiguration()
         self.load_configuration()
 
-        self.phantom = np.load('SheppLogan3D_64.npy') # 'SheppLogan3D_256.npy'
+        # self.phantom = np.load('SheppLogan3D_64.npy') # 'SheppLogan3D_256.npy'
 
         self.pixmap_fwd_proj = QGraphicsPixmapItem()
         self.pixmap_back_proj = QGraphicsPixmapItem()
 
-        if False:
-            from mesh_vox import read_and_reshape_stl, voxelize  # https://github.com/Septaris/mesh_vox
-            input_path = os.path.join('include', 'Head_Phantom.stl')
-            resolution = 256  # 100
-            mesh, bounding_box = read_and_reshape_stl(input_path, resolution)
-            voxels, bounding_box = voxelize(mesh, bounding_box)
-            np.save('voxels256.npy', turn_upside_down(crop(voxels)))
-            #np.save('bounding_box256.npy', bounding_box)
-        else:
-            #voxels = np.load('voxels256.npy')
-            voxels = np.load('voxelsCropped.npy')
-            #bounding_box = np.load('bounding_box256.npy')
-        self.phantom = voxels
+        voxels = np.load('voxels128.npz')
+        self.phantom = voxels[voxels.files[0]]
 
         self.fwd_proj_loaded = False
         self.back_proj_loaded = False
@@ -149,6 +138,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.pB_demo.clicked.connect(self.on_pB_demo_acquisition)
         self.pB_reset_view.clicked.connect(self.reset_view)
         self.pB_set_reco_dim.clicked.connect(lambda _: self.set_reco_dim(x=None, y=None, z=None))
+        self.pB_fluoro.clicked.connect(self.on_pB_fluoro)
 
         self.fwd_proj_playing = False
         self.back_proj_playing = False
@@ -160,6 +150,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
         self.fwd_proj_thread = forwardProjectionThread()
         self.fwd_proj_thread.finished.connect(self.on_fwd_proj_finished)
+        self.fluoro_thread = forwardProjectionThread()
+        self.fluoro_thread.finished.connect(self.on_fluoro_finished)
         self.back_proj_thread = backwardProjectionThread()
         self.back_proj_thread.finished.connect(self.on_back_proj_finished)
 
@@ -202,6 +194,24 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         #self.MainWindow.showFullScreen()
         self.MainWindow.showMaximized()
         self.resizeEvent()
+
+    def on_pB_fluoro(self):
+        for button in [self.pB_fluoro, self.pB_fwd_proj, self.pB_back_proj]:
+            button.setDisabled(True)
+        msg = 'Performing Fluoroscopy'
+        if self.current_language == 'de_DE':
+            msg = 'Fluoro'
+        self.statusBar.showMessage(msg)
+        self.save_configuration(filename=self.conrad_xml)
+        self.fluoro_thread.init(phantom=self.phantom, proj_idx=0, use_cl=self.cB_use_cl.isChecked())
+        self.fluoro_thread.start()
+
+    def on_fluoro_finished(self):
+        fluoro = scale_mat_from_to(self.fluoro_thread.get_fwd_proj())
+        self.display_image(self.gV_fwd_proj, fluoro)
+        for button in [self.pB_fluoro, self.pB_fwd_proj, self.pB_back_proj]:
+            button.setDisabled(False)
+        self.statusBar.clearMessage()
 
     def set_reco_dim(self, x=None, y=None, z=None):
         if x is None: x = self.phantom.shape[2]
@@ -550,8 +560,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.set_vtk_proj_mat(rot=self.timeline_anim.currentFrame()*self.sB_ang_incr.value())
 
     def on_pB_fwd_proj(self):
-        self.pB_fwd_proj.setDisabled(True)
-        self.pB_back_proj.setDisabled(True)
+        for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
+            button.setDisabled(True)
         # temporary fix for JVM memory leak: JVM garbage collector hint
         jpype.java.lang.System.gc()
         self.save_configuration(filename=self.conrad_xml)
@@ -672,8 +682,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         if self.filter_cosine_done and self.filter_ramlak_done and self.filter_cosine_ramlak_done:
             self.fwd_proj_completed = True
             self.on_filter_cB_changed()
-            self.pB_fwd_proj.setDisabled(False)
-            self.pB_back_proj.setDisabled(False)
+            for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
+                button.setDisabled(False)
             self.statusBar.clearMessage()
 
     def on_filter_cB_changed(self):
@@ -709,8 +719,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                             text=msg,
                             icon=self.get_icon('warning'))
             return
-        self.pb_fwd_proj.setDisabled(True)
-        self.pB_back_proj.setDisabled(True)
+        for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
+            button.setDisabled(True)
         self.back_proj_completed = False
         self.back_proj_loaded = False
         geo = self.conrad_config.getGeometry()
@@ -777,15 +787,15 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.generate_viewing_planes()
                 self.on_plane_sel_changed()
                 self.back_proj_completed = True
-                self.pB_fwd_proj.setDisabled(False)
-                self.pB_back_proj.setDisabled(False)
+                for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
+                    button.setDisabled(False)
                 self.statusBar.clearMessage()
         else:
             self.generate_viewing_planes()
             self.on_plane_sel_changed()
             self.back_proj_completed = True
-            self.pB_fwd_proj.setDisabled(False)
-            self.pB_back_proj.setDisabled(False)
+            for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
+                button.setDisabled(False)
             self.statusBar.clearMessage()
 
     def generate_viewing_planes(self):
@@ -827,7 +837,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.timeline_fwd_proj.setDuration(frame_duration * self.fwd_proj_filtered_uint8.shape[0])
         self.timeline_fwd_proj.setUpdateInterval(frame_duration)
         self.timeline_fwd_proj.setCurrentTime(self.timeline_fwd_proj.duration() * current_val_fwd_proj)
-        self.timeline_back_proj.setDuration(frame_duration * self.back_proj_disp.shape[0])
+        self.timeline_back_proj.setDuration(frame_duration * (self.back_proj_disp.shape[0] if self.back_proj_completed else 1))
         self.timeline_back_proj.setUpdateInterval(frame_duration)
         self.timeline_back_proj.setCurrentTime(self.timeline_back_proj.duration() * current_val_back_proj)
         if self.fwd_proj_playing:

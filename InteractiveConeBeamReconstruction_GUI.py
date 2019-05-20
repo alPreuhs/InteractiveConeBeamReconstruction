@@ -455,6 +455,15 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.pB_fwd_proj.setMaximumSize(QtCore.QSize(40, 16777215))
         self.pB_fwd_proj.setObjectName("pB_fwd_proj")
         self.vLayout_scan_btn.addWidget(self.pB_fwd_proj)
+        self.pB_fluoro = QtWidgets.QPushButton(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.pB_fluoro.sizePolicy().hasHeightForWidth())
+        self.pB_fluoro.setSizePolicy(sizePolicy)
+        self.pB_fluoro.setMaximumSize(QtCore.QSize(40, 16777215))
+        self.pB_fluoro.setObjectName("pB_fluoro")
+        self.vLayout_scan_btn.addWidget(self.pB_fluoro)
         spacerItem3 = QtWidgets.QSpacerItem(20, 30, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         self.vLayout_scan_btn.addItem(spacerItem3)
         self.hLayout_reco.addLayout(self.vLayout_scan_btn)
@@ -584,6 +593,9 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.action_save_config.setIcon(icon4)
         self.action_save_config.setObjectName("action_save_config")
         self.action_voxelize = QtWidgets.QAction(Interactive_Cone_Beam_Reconstruction)
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap("icons/voxels.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_voxelize.setIcon(icon5)
         self.action_voxelize.setObjectName("action_voxelize")
         self.action_set_phantom = QtWidgets.QAction(Interactive_Cone_Beam_Reconstruction)
         self.action_set_phantom.setObjectName("action_set_phantom")
@@ -670,6 +682,12 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
 "C\n"
 "A\n"
 "N"))
+        self.pB_fluoro.setText(_translate("Interactive_Cone_Beam_Reconstruction", "F\n"
+"L\n"
+"U\n"
+"O\n"
+"R\n"
+"O"))
         self.pB_back_proj.setText(_translate("Interactive_Cone_Beam_Reconstruction", "R\n"
 "E\n"
 "C\n"
