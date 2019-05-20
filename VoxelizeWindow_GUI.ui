@@ -25,6 +25,10 @@
   <property name="windowTitle">
    <string>Voxelize Mesh</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>icons/voxels.svg</normaloff>icons/voxels.svg</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
     <number>12</number>
