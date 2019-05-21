@@ -183,6 +183,9 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.timeline_anim.setDuration(4000)
         self.timeline_anim.frameChanged.connect(self.demo_acquisition)
 
+        voxels = np.load(os.path.join('include', 'Head_Phantom_voxelized.npz'))
+        self.phantom = voxels[voxels.files[0]]
+
         # projections indices for the threads
         self.current_fwd_proj_idx = 0
         self.current_back_proj_idx = 0
