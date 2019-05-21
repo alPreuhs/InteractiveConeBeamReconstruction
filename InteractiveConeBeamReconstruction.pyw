@@ -1,39 +1,38 @@
 import sys
-from PyQt5.QtCore import Qt, QTranslator, pyqtSignal, pyqtSlot, QThread, QTimeLine, qFatal
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QGraphicsScene, QMessageBox, QDialog
-from PyQt5.QtGui import QImage, QPixmap, QIcon
-import numpy as np
-from qimage2ndarray import array2qimage
-from stl import mesh
 import os
 import pathlib
+import traceback
+import numpy as np
+
+from PyQt5.QtCore import Qt, QTranslator, pyqtSignal, QTimeLine, qFatal
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QGraphicsScene, QMessageBox, QDialog
+from PyQt5.QtGui import QPixmap, QIcon
+from qimage2ndarray import array2qimage
+from SplashScreen import SplashScreen
 from InteractiveConeBeamReconstruction_GUI import Ui_Interactive_Cone_Beam_Reconstruction
 from VoxelizeWindow import VoxelizeMainWindow, VoxelizeWindow
+
 from vtkWindow import vtkWindow
-import traceback
-from include.help_functions import scale_mat_from_to, crop, turn_upside_down
+from include.help_functions import scale_mat_from_to, rot_mat_to_euler
 from Math.projection import create_default_projection_matrix, get_rotation_matrix_by_axis_and_angle
 from Math.vtk_proj_matrix import vtk_proj_matrix
+
 import jpype
-from include.Conrad_XML import Conrad_XML
-from SplashScreen import SplashScreen
 import pyconrad
 pyconrad.setup_pyconrad(min_ram='1G')
+
 from threads.forward_projection_thread import forwardProjectionThread
 from threads.backward_projection_thread import backwardProjectionThread
 from threads.filter_thread import filterThread
+
 from edu.stanford.rsl.conrad.data.numeric import Grid2D, Grid3D
 from edu.stanford.rsl.conrad.utils import Configuration
-from edu.stanford.rsl.conrad.utils.Configuration import saveConfiguration, getGlobalConfiguration, \
-    setGlobalConfiguration
+from edu.stanford.rsl.conrad.utils.Configuration import saveConfiguration, getGlobalConfiguration, setGlobalConfiguration
 from edu.stanford.rsl.conrad.geometry.trajectories import CircularTrajectory
 from edu.stanford.rsl.conrad.geometry.Projection import CameraAxisDirection
 from edu.stanford.rsl.conrad.numerics import SimpleVector
 from edu.stanford.rsl.conrad.geometry.shapes.simple import PointND
-#from edu.stanford.rsl.tutorial.cone import ConeBeamCosineFilter
-#from edu.stanford.rsl.tutorial.filters import RamLakKernel
-#from edu.stanford.rsl.conrad.phantom import NumericalSheppLogan3D
-#from edu.stanford.rsl.tutorial.cone import ConeBeamProjector, ConeBeamBackprojector, ConeBeamCosineFilter
+
 
 class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction):
     def __init__(self, MainWindow, app):
@@ -45,8 +44,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.MainWindow = MainWindow
         self.app = app
 
-        #self.app.processEvents()
-
+        # install translator
         self.translator = QTranslator()
         self.app.installTranslator(self.translator)
 
@@ -56,7 +54,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         def excepthook(type_, value, traceback_):
             traceback.print_exception(type_, value, traceback_)
             qFatal('')
-
         sys.excepthook = excepthook
 
         # Setup UI, which is created via qt designer and pyuic5
@@ -64,27 +61,21 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.setupUi(self.MainWindow)
         self.MainWindow.resized.connect(self.resizeEvent)
 
-        self.conrad_xml = os.path.join(str(pathlib.Path.home()), 'Conrad.xml')
-        Configuration.loadConfiguration()
+        # Conrad configuration
+        self.conrad_xml = os.path.join(str(pathlib.Path.home()), 'Conrad.xml') # config file in home folder
+        Configuration.loadConfiguration() # load configuration from xml
         self.conrad_config = Configuration.getGlobalConfiguration()
-        self.load_configuration()
+        self.load_configuration() # set UI elements according to xml setup
 
-        # self.phantom = np.load('SheppLogan3D_64.npy') # 'SheppLogan3D_256.npy'
-
+        # pixmaps for resizing the graphicsviews
         self.pixmap_fwd_proj = QGraphicsPixmapItem()
         self.pixmap_back_proj = QGraphicsPixmapItem()
 
-        voxels = np.load('voxels128.npz')
-        self.phantom = voxels[voxels.files[0]]
-
-        self.fwd_proj_loaded = False
-        self.back_proj_loaded = False
-        self.fwd_proj_completed = False
-        self.back_proj_completed = False
-
+        # setup VTK widget
         self.vtk_handle = vtkWindow()
         self.vtk_handle.vtkWidget(self.view_3D, filename=os.path.join('include', 'Head_Phantom.stl')) #'C-arm_simple.stl'
 
+        # init projection matrix for VTK widget
         sdd, sid = 700, 500
         off_u, off_v = 128, 128
         pmat = create_default_projection_matrix(pixel_spacing=1, sid=sdd, sisod=sid, offset_u=off_u, offset_v=off_v)
@@ -93,8 +84,11 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.set_vtk_proj_mat()
 
         if self.debug:
-            self.vtk_handle.add_coordinate_axes(length=200, color=[0, 1, 0])
+            self.vtk_handle.add_coordinate_axes(length=200, color=[0, 1, 0]) # show coordinate axes
 
+        # connect spin boxes
+        # sdd = source to detector distance
+        # sid = source to isocenter distance
         self.sB_sdd.valueChanged.connect(self.on_sB_sdd)
         self.sB_sid.valueChanged.connect(self.on_sB_sid)
         self.sB_pix_dim_x.valueChanged.connect(lambda _: self.set_vtk_proj_mat(pmat=None, rot=0))
@@ -107,14 +101,13 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.sB_det_width_simple.valueChanged.connect(self.on_sB_det_width_simple)
         self.sB_det_height_simple.valueChanged.connect(self.on_sB_det_height_simple)
 
+        # connect horizontal sliders
         self.hS_sdd_simple.valueChanged.connect(self.on_hS_sdd_simple)
         self.hS_sid_simple.valueChanged.connect(self.on_hS_sid_simple)
         self.hS_det_width_simple.valueChanged.connect(self.on_hS_det_width_simple)
         self.hS_det_height_simple.valueChanged.connect(self.on_hS_det_height_simple)
 
-        self.last_opened_dir_3D = '.'
-        self.last_opened_dir_xml = str(pathlib.Path.home())
-
+        # connect menu bar items
         self.action_open_3D_data.triggered.connect(self.open_3D_Data)
         self.action_change_lang_en_GB.triggered.connect(lambda _: self.change_language('en_GB'))
         self.action_change_lang_de_DE.triggered.connect(lambda _: self.change_language('de_DE'))
@@ -123,13 +116,13 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.action_voxelize.triggered.connect(self.on_action_voxelize)
         self.action_set_phantom.triggered.connect(self.on_action_set_phantom)
 
-        self.current_language = 'en_GB'
-
+        # connect (horizontal) scroll bars
         self.scroll_fwd_proj.sliderMoved.connect(self.on_scroll_fwd_proj)
         self.scroll_fwd_proj.valueChanged.connect(self.on_scroll_fwd_proj)
         self.scroll_back_proj.sliderMoved.connect(self.on_scroll_back_proj)
         self.scroll_back_proj.valueChanged.connect(self.on_scroll_back_proj)
 
+        # connect buttons
         self.pB_fwd_proj.clicked.connect(self.on_pB_fwd_proj)
         self.pB_back_proj.clicked.connect(self.on_pB_back_proj)
         self.pB_fwd_proj_play_pause.clicked.connect(self.fwd_proj_play_pause)
@@ -140,14 +133,14 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.pB_set_reco_dim.clicked.connect(lambda _: self.set_reco_dim(x=None, y=None, z=None))
         self.pB_fluoro.clicked.connect(self.on_pB_fluoro)
 
-        self.fwd_proj_playing = False
-        self.back_proj_playing = False
-
+        # play / pause icons
         self.icon_play = self.get_icon('play')
         self.icon_pause = self.get_icon('pause')
 
+        # combo box for axial / sagittal / coronal plane views
         self.comboBox_plane_sel.currentTextChanged.connect(self.on_plane_sel_changed)
 
+        # setup and connect threads for projections and backprojections
         self.fwd_proj_thread = forwardProjectionThread()
         self.fwd_proj_thread.finished.connect(self.on_fwd_proj_finished)
         self.fluoro_thread = forwardProjectionThread()
@@ -155,6 +148,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.back_proj_thread = backwardProjectionThread()
         self.back_proj_thread.finished.connect(self.on_back_proj_finished)
 
+        # setup and connect threads for filters
         self.filter_thread_cosine = filterThread()
         self.filter_thread_cosine.finished.connect(lambda: self.on_filter_finished(cosine=True, ramlak=False))
         self.filter_thread_ramlak = filterThread()
@@ -162,15 +156,18 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.filter_thread_cosine_ramlak = filterThread()
         self.filter_thread_cosine_ramlak.finished.connect(lambda: self.on_filter_finished(cosine=True, ramlak=True))
 
+        # connect check boxes for filters
         self.cB_ramlak_filter.stateChanged.connect(self.on_filter_cB_changed)
         self.cB_cosine_filter.stateChanged.connect(self.on_filter_cB_changed)
 
+        # setup the frame duration for the slide shows
         self.frame_duration_min = 10
         self.frame_duration_max = 2000
         self.sB_speed.setMaximum(6)  # 5 steps
         self.frame_duration_dt = (self.frame_duration_max - self.frame_duration_min) / (self.sB_speed.maximum() - 1)
         self.frame_duration = self.frame_duration_max
 
+        # setup and connect the time lines for the slide shows
         self.timeline_fwd_proj = QTimeLine()
         self.timeline_fwd_proj.setCurveShape(QTimeLine.LinearCurve)
         self.timeline_fwd_proj.frameChanged.connect(self.display_image_fwd_proj)
@@ -186,16 +183,32 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.timeline_anim.setDuration(4000)
         self.timeline_anim.frameChanged.connect(self.demo_acquisition)
 
+        # projections indices for the threads
         self.current_fwd_proj_idx = 0
         self.current_back_proj_idx = 0
 
+        self.fwd_proj_loaded = False
+        self.back_proj_loaded = False
+        self.fwd_proj_completed = False
+        self.back_proj_completed = False
+        self.fwd_proj_playing = False
+        self.back_proj_playing = False
+
+        self.current_language = 'en_GB'
+
+        # when opening files or folders, save them for the next use
+        self.last_opened_dir_3D = '.'
+        self.last_opened_dir_xml = str(pathlib.Path.home())
+
         if show_splash_screen:
             splash.finish(self.MainWindow)
-        #self.MainWindow.showFullScreen()
+
         self.MainWindow.showMaximized()
         self.resizeEvent()
 
+
     def on_pB_fluoro(self):
+        """Performs a single forward projection for the LAO/RAO angle 0°."""
         for button in [self.pB_fluoro, self.pB_fwd_proj, self.pB_back_proj]:
             button.setDisabled(True)
         msg = 'Performing Fluoroscopy'
@@ -207,13 +220,15 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.fluoro_thread.start()
 
     def on_fluoro_finished(self):
-        fluoro = scale_mat_from_to(self.fluoro_thread.get_fwd_proj())
+        """Displays the fluoro image when the thread is finished."""
+        fluoro = scale_mat_from_to(self.fluoro_thread.get_fwd_proj()) # scale to 0 to 255
         self.display_image(self.gV_fwd_proj, fluoro)
         for button in [self.pB_fluoro, self.pB_fwd_proj, self.pB_back_proj]:
             button.setDisabled(False)
         self.statusBar.clearMessage()
 
     def set_reco_dim(self, x=None, y=None, z=None):
+        """Sets the spin boxes of the reconstruction volume size."""
         if x is None: x = self.phantom.shape[2]
         if y is None: y = self.phantom.shape[1]
         if z is None: z = self.phantom.shape[0]
@@ -222,31 +237,43 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.sB_reco_dim_z.setValue(z)
 
     def on_action_set_phantom(self):
+        """Gets the phantom file name from a dialog and sets the voxel volume used for the forward projection."""
         phantom_filename, _ = QFileDialog.getOpenFileName(self.centralwidget, 'Choose phantom file',
                                                           self.last_opened_dir_3D, 'Numpy (*.npy;*.npz)')
-        if not phantom_filename:
-            return
-        phantom = np.load(phantom_filename)
-        ext = os.path.splitext(phantom_filename)[1].lower()
+        if phantom_filename:
+            self.set_phantom_from_file(phantom_filename)
+
+    def set_phantom_from_file(self, filename: str):
+        """
+        Sets the voxel volume used for the forward projection from the given filename.
+        Supports numpy files (.npy) and numpy archives (.npz).
+        """
+        phantom = np.load(filename)
+        ext = os.path.splitext(filename)[1].lower()
         if ext == '.npy':
             self.phantom = phantom
         elif ext == '.npz':
             self.phantom = phantom[phantom.files[0]]
+        else:
+            pass # TODO
 
     def on_action_voxelize(self):
+        """Opens the dialog for voxelizing meshes."""
         app = QDialog()
         MainWindow = VoxelizeMainWindow()
         prog = VoxelizeWindow(MainWindow, app)
         MainWindow.show()
         MainWindow.exec_()
 
-    def change_language(self, lang):
+    def change_language(self, lang: str):
+        """Translates the UI to the specified language."""
         if self.translator.load(os.path.join('languages', lang + '.qm')):
             self.app.installTranslator(self.translator)
         self.retranslateUi(self.MainWindow)
         self.current_language = lang
 
     def msg_window(self, windowTitle='', text='', detailedText='', icon=None):
+        """Opens message window with specified text."""
         msgWindow = QMessageBox()
         if icon is not None:
             msgWindow.setWindowIcon(icon)
@@ -260,6 +287,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def init_icons(self):
         self.iconPath = 'icons'
+        # dictionary with icon filenames so they only need to be changed once
         self.icons = {}
         self.icons['play'] = 'play.svg'
         self.icons['pause'] = 'pause.svg'
@@ -274,18 +302,20 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.icons['file warning'] = 'file_warning.svg'
         self.icons['file not found'] = 'file_x.svg'
 
-    def get_icon(self, name):
+    def get_icon(self, name: str):
+        """Gets the QIcon for the specified name if its in the icons dictionary."""
         iconFilename = self.icons[name] if name in self.icons.keys() else 'blank.svg'
         iconFilename = os.path.join(os.path.dirname(os.path.realpath(__file__)), self.iconPath, iconFilename)
         return QIcon(iconFilename) if os.path.isfile(iconFilename) else QIcon()
 
     def reset_view(self):
+        """Resets the view of the VTK widget."""
         self.vtk_handle.reset_view()
 
     def on_sB_sdd_simple(self):
         val = self.sB_sdd_simple.value()
-        if val > self.hS_sdd_simple.maximum():
-            self.hS_sdd_simple.setMaximum(val)
+        if val > self.hS_sdd_simple.maximum(): # if the value is outside of the slider range
+            self.hS_sdd_simple.setMaximum(val) # update the sliders maximum value
         self.hS_sdd_simple.setValue(val)
         self.sB_sdd.setValue(val)
         self.set_vtk_proj_mat(pmat=None, rot=0)
@@ -371,13 +401,18 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.set_vtk_proj_mat(pmat=None, rot=0)
 
     def set_vtk_proj_mat(self, pmat=None, rot=0):
+        """
+        Displays the projection visualisation for the projection matrix for the given rotation angle.
+        Uses the values from the config spin boxes.
+        """
         self.vtk_handle.remove_actor(self.proj_mat_actor)
         # TODO: values from Conrad.xml may not be up to date with values from the ui spinboxes
         sdd = self.sB_sdd.value()
         sid = self.sB_sid.value()
         off_u = self.sB_det_height.value() / 2  # ?
         off_v = self.sB_det_width.value() / 2  # ?
-        if pmat is None:
+        if pmat is None: # create projection matrix if not specified
+            # set the LAO RAO angle label
             if rot == 0:
                 self.label_angles.setText('LAO/RAO: 0°\tCRAN/CAUD: 0°')
             elif rot == 180:
@@ -387,12 +422,12 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             else:
                 self.label_angles.setText('LAO: {}°\tCRAN/CAUD: 0°'.format(360-rot))
             rot -= 90 # like Conrad proj mats!? start from x-axis not y-axis!?
-            pmat = create_default_projection_matrix(rao_lao_ang=rot, pixel_spacing=self.sB_pix_dim_x.value(), sid=sdd, sisod=sid,
-                                                    offset_u=off_u, offset_v=off_v)
-        if False:  # if rot is not 0:
-            rot_mat = get_rotation_matrix_by_axis_and_angle(np.matrix([0, 0, 1]).T, rot, make_matrix_homogen=True)
-            pmat = pmat * rot_mat
-
+            pmat = create_default_projection_matrix(
+                rao_lao_ang=rot,
+                pixel_spacing=self.sB_pix_dim_x.value(),
+                sid=sdd, sisod=sid,
+                offset_u=off_u, offset_v=off_v
+            )
         self.proj_mat_actor = vtk_proj_matrix(pmat, sdd, off_u * 2, off_v * 2)
         self.proj_mat_actor.GetProperty().SetColor(1, 0, 0)
         self.proj_mat_actor.GetProperty().SetLineWidth(5)
@@ -400,16 +435,18 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.vtk_handle.update()
 
     def reset_configuration(self):
+        """Reset the CONRAD.xml config file."""
         msg = 'Initilalising configuration'
         if self.current_language == 'de_DE':
             msg = 'Initialisiere Konfiguration'
         self.statusBar.showMessage(msg)
-        Configuration.initConfig()
-        self.load_configuration(filename=self.conrad_xml)
+        Configuration.initConfig() # conrad config initialisation
+        self.load_configuration(filename=self.conrad_xml) # load values into UI elements
         self.statusBar.clearMessage()
 
     def load_configuration(self, filename=os.path.join(str(pathlib.Path.home()), 'Conrad.xml')):
-        if not os.path.isfile(filename):
+        """Loads conrad configuration from the Conrad.xml"""
+        if not os.path.isfile(filename): # if file does not exist, open file dialog
             inf = 'Open CONRAD configuration'
             if self.current_language == 'de_DE':
                 inf = 'CONRAD-Konfiguration öffnen'
@@ -450,6 +487,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.conrad_geometry = geo
 
     def save_configuration(self, filename=os.path.join(str(pathlib.Path.home()), 'Conrad.xml')):
+        """Saves the current configuration back to Conrad.xml"""
         if self.sB_sdd.value() <= self.sB_sid.value():
             txt = 'Source to detector distance must be larger than source to patient distance.'
             if self.current_language == 'de_DE':
@@ -467,6 +505,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             if not len(filename):
                 return
             self.last_opened_dir_xml = os.path.split(filename)[0]
+        # create trajectory
         geo = self.conrad_circular_trajectory(
             n_proj=self.sB_num_proj.value(),
             sid=self.sB_sid.value(),
@@ -492,6 +531,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         saveConfiguration(self.conrad_config, filename)
         Configuration.setGlobalConfiguration(self.conrad_config)
 
+    # helper
     def get_camera_axis_direction_from_string(self, ax_dir):
         ax_dir = ax_dir.upper()
         if ax_dir == 'DETECTORMOTION_PLUS':
@@ -520,7 +560,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             det_width=620, det_height=480,
             pix_dim_x=1.0, pix_dim_y=1.0,
             reco_dim_x=256, reco_dim_y=256, reco_dim_z=256):
-        # default values only set so the values can be used in arbitrary order
+        """Returns conrad trajectory for the current configuration."""
         if type(u_dir) == str:
             u_dir = self.get_camera_axis_direction_from_string(u_dir)
         if type(v_dir) == str:
@@ -553,6 +593,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         return trajectory
 
     def on_pB_demo_acquisition(self):
+        """Performs a dummy acquisition. Only displays the projection matrices, not the forward projections."""
         self.timeline_anim.setFrameRange(0, self.sB_num_proj.value() - 1)
         self.timeline_anim.start()
 
@@ -560,6 +601,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.set_vtk_proj_mat(rot=self.timeline_anim.currentFrame()*self.sB_ang_incr.value())
 
     def on_pB_fwd_proj(self):
+        """Saves the current configuration  and starts the forward projection."""
         for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
             button.setDisabled(True)
         # temporary fix for JVM memory leak: JVM garbage collector hint
@@ -571,23 +613,24 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         num_projs = geo.getProjectionStackSize()
         det_height = geo.getDetectorHeight()
         det_width = geo.getDetectorWidth()
-        self.fwd_proj = np.ndarray(shape=(num_projs, det_height, det_width))
-        self.fwd_proj_uint8 = np.ndarray(shape=(num_projs, det_height, det_width), dtype=np.uint8)
-        self.fwd_proj_filtered_uint8 = np.ndarray(shape=(num_projs, det_height, det_width), dtype=np.uint8)
+        self.fwd_proj = np.ndarray(shape=(num_projs, det_height, det_width)) # resulting forward projection
+        self.fwd_proj_uint8 = np.ndarray(shape=(num_projs, det_height, det_width), dtype=np.uint8) # scaled to 0 to 255
+        self.fwd_proj_filtered_uint8 = np.ndarray(shape=(num_projs, det_height, det_width), dtype=np.uint8) # filtered
         self.on_speed_changed()
         self.timeline_fwd_proj.setFrameRange(0, num_projs - 1)
         self.scroll_fwd_proj.setMaximum(num_projs - 1)
         self.fwd_proj_thread.init(phantom=self.phantom, use_cl=self.cB_use_cl.isChecked())
-        if self.rB_all.isChecked():
+        if self.rB_all.isChecked(): # project all frames at once
             self.current_fwd_proj_idx = None
             self.fwd_proj_slice_by_slice = False
-        else:
+        else: # project slice by slice and displays the results immediately
             self.current_fwd_proj_idx = 0
             self.fwd_proj_slice_by_slice = True
         self.fwd_proj_thread.proj_idx = self.current_fwd_proj_idx
         self.fwd_project()
 
     def fwd_project(self):
+        """Starts the forward projection thread."""
         msg = 'Performing forward projection'
         if self.current_language == 'de_DE':
             msg = 'Vorwärtsprojektion'
@@ -606,6 +649,9 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.fwd_proj_thread.start()
 
     def on_fwd_proj_finished(self):
+        """
+        Displays the (current) forward projection and starts the next projection or starts the filtering when the projection is done.
+        """
         self.fwd_proj_loaded = True
         current_proj = self.fwd_proj_thread.get_fwd_proj()
         if self.fwd_proj_slice_by_slice:
@@ -614,11 +660,11 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.scroll_fwd_proj.setMaximum(self.current_fwd_proj_idx)
             self.scroll_fwd_proj.setValue(self.current_fwd_proj_idx)
             self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[self.current_fwd_proj_idx])
-            if self.current_fwd_proj_idx < self.num_proj_mats - 1:
+            if self.current_fwd_proj_idx < self.num_proj_mats - 1: # if not all projections done
                 self.current_fwd_proj_idx += 1
                 self.fwd_proj_thread.proj_idx = self.current_fwd_proj_idx
                 self.fwd_project()
-            else:
+            else: # done
                 self.fwd_proj_uint8 = scale_mat_from_to(self.fwd_proj)
                 self.statusBar.clearMessage()
                 self.filter_fwd_proj()
@@ -632,6 +678,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.filter_fwd_proj()
 
     def filter_fwd_proj(self):
+        """Starts the threads for filtering the forward projection."""
         # temporary fix for JVM memory leak: JVM garbage collector hint
         jpype.java.lang.System.gc()
         self.filter_cosine_done = False
@@ -679,7 +726,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.filter_ramlak_done = True
         else:
             pass  # TODO
-        if self.filter_cosine_done and self.filter_ramlak_done and self.filter_cosine_ramlak_done:
+        if self.filter_cosine_done and self.filter_ramlak_done and self.filter_cosine_ramlak_done: # all done
             self.fwd_proj_completed = True
             self.on_filter_cB_changed()
             for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
@@ -687,6 +734,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.statusBar.clearMessage()
 
     def on_filter_cB_changed(self):
+        """Updates the displayed image of the filtered forward projection."""
         if not self.fwd_proj_completed:
             return
         cosine = self.cB_cosine_filter.isChecked()
@@ -706,6 +754,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered_uint8[self.scroll_fwd_proj.value()])
 
     def on_pB_back_proj(self):
+        """Initialises the back projection."""
         # temporary fix for JVM memory leak: JVM garbage collector hint
         jpype.java.lang.System.gc()
         # self.save_configuration(filename=self.conrad_xml)
@@ -731,11 +780,11 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.back_proj_disp = np.zeros(shape=(zmax, ymax, xmax), dtype=np.uint8)
         self.on_speed_changed()
         self.timeline_back_proj.setFrameRange(0, self.fwd_proj.shape[0] - 1)
-        if self.rB_all.isChecked():
+        if self.rB_all.isChecked(): # backproject all at once
             self.back_proj_slice_by_slice = False
             self.current_back_proj_idx = None
             self.current_back_proj_slice_idx = None
-        else:
+        else: # backproject projection after projection
             self.back_proj_slice_by_slice = True
             self.current_back_proj_idx = 0
             self.current_back_proj_slice_idx = 0
@@ -743,6 +792,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.back_project()
 
     def back_project(self):
+        """Starts the back projection thread."""
         msg = 'Performing backward projection'
         if self.current_language == 'de_DE':
             msg = 'Rückprojektion'
@@ -765,7 +815,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
     def on_back_proj_finished(self):
         current_reco = self.back_proj_thread.get_back_proj()
         if self.back_proj_slice_by_slice:
-            self.back_proj = np.add(self.back_proj, current_reco)
+            self.back_proj = np.add(self.back_proj, current_reco) # TODO: check conrad function
         else:
             self.back_proj = current_reco
         self.back_proj_uint8 = scale_mat_from_to(self.back_proj)
@@ -799,6 +849,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.statusBar.clearMessage()
 
     def generate_viewing_planes(self):
+        """Rotates the reconstructed volume to show axial, sagittal and coronal planes."""
         # TODO: check if rotations are correct
         self.back_proj_axial = np.rot90(self.back_proj_uint8, 2, (1, 2))
         self.back_proj_axial = np.rot90(self.back_proj_axial, 2, (0, 2))
@@ -809,6 +860,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.back_proj_coronal = np.rot90(self.back_proj_coronal, 2, (0, 2))
 
     def on_plane_sel_changed(self):
+        """Updates plane view."""
         if not self.back_proj_loaded:
             return
         currentText = self.comboBox_plane_sel.currentText()
@@ -825,6 +877,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.on_speed_changed()
 
     def on_speed_changed(self):
+        """Updates the timeline durations for the slide shows."""
         if not self.fwd_proj_completed and not self.back_proj_completed:
             return
         if self.fwd_proj_playing:
@@ -846,6 +899,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.timeline_back_proj.resume()
 
     def fwd_proj_play_pause(self):
+        """Starts / pauses the forward projection slide show."""
         if not self.fwd_proj_loaded:
             return
         self.timeline_fwd_proj.stop()
@@ -861,6 +915,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.pB_fwd_proj_play_pause.setIcon(self.icon_play)
 
     def back_proj_play_pause(self):
+        """Starts / pauses the back projection slide show."""
         if not self.back_proj_loaded:
             return
         self.timeline_back_proj.stop()
@@ -875,27 +930,19 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.timeline_back_proj.stop()
             self.pB_back_proj_play_pause.setIcon(self.icon_play)
 
-    def rot_mat_to_euler(self, R, deg=True):
-        R = np.array(R)
-        alpha_x = np.arctan2(R[2, 1], R[2, 2])
-        alpha_y = np.arctan2(-R[2, 0], np.sqrt(R[1, 2] ** 2 + R[2, 2] ** 2))
-        alpha_z = np.arctan2(R[0, 1], R[0, 0])
-        if deg:
-            alpha_x = np.rad2deg(alpha_x)
-            alpha_y = np.rad2deg(alpha_y)
-            alpha_z = np.rad2deg(alpha_z)
-        return alpha_x, alpha_y, alpha_z
-
     def on_scroll_fwd_proj(self):
+        """
+        Updates the forward projection image in graphicsview and the projection matrix in the VTK widget when the slider is changed.
+        """
         if not self.fwd_proj_loaded:
             return
         frame_num = self.scroll_fwd_proj.value()
         self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered_uint8[frame_num])
         use_conrad_proj_mat = False
-        if use_conrad_proj_mat:
+        if use_conrad_proj_mat: # load projection matrices from conrad
             conrad_proj_mats = self.conrad_config.getGeometry().getProjectionMatrices()
             R = conrad_proj_mats[frame_num].getR().as_numpy()
-            print(self.rot_mat_to_euler(R))
+            print(rot_mat_to_euler(R))
             proj_mat = conrad_proj_mats[frame_num].computeP().as_numpy()
             self.set_vtk_proj_mat(pmat=proj_mat, rot=0)
         else:
@@ -903,6 +950,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.set_vtk_proj_mat(pmat=None, rot=ang)
 
     def on_scroll_back_proj(self):
+        """Updates the back projection images in the graphicsview when the slider is changed."""
         if self.back_proj_loaded:
             self.display_image(self.gV_back_proj, self.back_proj_disp[self.scroll_back_proj.value()])
 
@@ -915,6 +963,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.scroll_back_proj.setValue(self.timeline_back_proj.currentFrame())
 
     def display_image(self, graphics_view, image):
+        """Displays the specified image in the specified graphicsview and fits the content to the view."""
         pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(image)))
         if graphics_view == self.gV_fwd_proj:
             self.pixmap_fwd_proj = pixmap_item
@@ -965,10 +1014,15 @@ class Window(QMainWindow):
         elif event.key() == Qt.Key_Escape and self.isFullScreen():
             self.showNormal()
             event.accept()
+        #elif event.key() == Qt.Key_Alt:
+        #    if self.menuBar().isVisible():
+        #        self.menuBar().hide()
+        #    else:
+        #        self.menuBar().show()
 
 
 if __name__ == '__main__':
-    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True) # support high DPI displays
     app = QApplication(sys.argv)
     MainWindow = Window()
     prog = InteractiveConeBeamReconstruction(MainWindow, app)
