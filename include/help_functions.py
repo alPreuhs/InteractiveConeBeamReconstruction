@@ -35,6 +35,17 @@ def turn_upside_down(array):
     flipped = np.rot90(array, 2, (1, 2))
     return np.rot90(flipped, 2, (0, 2))
 
+def rot_mat_to_euler(R, deg=True):
+    R = np.array(R)
+    alpha_x = np.arctan2(R[2, 1], R[2, 2])
+    alpha_y = np.arctan2(-R[2, 0], np.sqrt(R[1, 2] ** 2 + R[2, 2] ** 2))
+    alpha_z = np.arctan2(R[0, 1], R[0, 0])
+    if deg:
+        alpha_x = np.rad2deg(alpha_x)
+        alpha_y = np.rad2deg(alpha_y)
+        alpha_z = np.rad2deg(alpha_z)
+    return alpha_x, alpha_y, alpha_z
+
 def get_rotation(rot_angle_x, rot_angle_y, rot_angle_z):
     def s(x):
         return math.sin(math.radians(x))
