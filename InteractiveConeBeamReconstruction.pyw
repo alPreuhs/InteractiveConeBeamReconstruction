@@ -196,6 +196,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.back_proj_completed = False
         self.fwd_proj_playing = False
         self.back_proj_playing = False
+        self.fwd_proj_play_loop = False
+        self.back_proj_play_loop = False
 
         self.current_language = 'en_GB'
 
@@ -905,6 +907,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         """Starts / pauses the forward projection slide show."""
         if not self.fwd_proj_loaded:
             return
+        if self.fwd_proj_play_loop:
+            self.timeline_fwd_proj.setCurrentTime(0)
+            self.timeline_fwd_proj.start()
+            return
         self.timeline_fwd_proj.stop()
         self.fwd_proj_playing = not self.fwd_proj_playing
         if self.fwd_proj_playing:
@@ -920,6 +926,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
     def back_proj_play_pause(self):
         """Starts / pauses the back projection slide show."""
         if not self.back_proj_loaded:
+            return
+        if self.back_proj_play_loop:
+            self.timeline_back_proj.setCurrentTime(0)
+            self.timeline_back_proj.start()
             return
         self.timeline_back_proj.stop()
         self.back_proj_playing = not self.back_proj_playing
