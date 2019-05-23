@@ -1,7 +1,8 @@
 import math
 import numpy as np
 import vtk
-
+import pytiff
+import pydicom
 
 def scale_mat_from_to(mat, from_min=None, from_max=None, to_min=0, to_max=255, dtype=np.uint8):
     if from_min is None:
@@ -9,6 +10,7 @@ def scale_mat_from_to(mat, from_min=None, from_max=None, to_min=0, to_max=255, d
     if from_max is None:
         from_max = np.max(mat)
     return np.interp(mat, (from_min, from_max), (to_min, to_max)).astype(dtype)
+
 
 def crop(array):
     xmin = ymin = zmin = np.max(array.shape)
@@ -31,9 +33,22 @@ def crop(array):
                         zmax = z
     return array[zmin:zmax,ymin:ymax,xmin:xmax]
 
+
 def turn_upside_down(array):
     flipped = np.rot90(array, 2, (1, 2))
     return np.rot90(flipped, 2, (0, 2))
+
+
+def multi_tiff_to_numpy(filename):
+    with pytiff.Tiff(filename) as handle:
+        arr = np.ndarray(shape=(handle.number_of_pages, handle.shape[0], handle.shape[1]), dtype=handle.dtype)
+        for i, page in enumerate(handle.pages):
+            arr[i] = page
+        return arr
+
+
+def dicom_to_numpy(filename: str):
+    return pydicom.dcmread(filename).pixel_array
 
 def rot_mat_to_euler(R, deg=True):
     R = np.array(R)
@@ -45,6 +60,7 @@ def rot_mat_to_euler(R, deg=True):
         alpha_y = np.rad2deg(alpha_y)
         alpha_z = np.rad2deg(alpha_z)
     return alpha_x, alpha_y, alpha_z
+
 
 def get_rotation(rot_angle_x, rot_angle_y, rot_angle_z):
     def s(x):
