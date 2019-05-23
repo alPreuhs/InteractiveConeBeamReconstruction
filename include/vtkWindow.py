@@ -10,7 +10,7 @@ import random
 
 ## class that needs a qtFrame and places a vtk renderwindow inside
 class vtkWindow():
-    def vtkWidget(self, qFrame, filename=join("include", "Head_Phantom.stl")):
+    def vtkWidget(self, qFrame, filename=''):
         # the center computation might seem to be a bit complicated however what we do is:
         # the center_of_rotation gives the center of rotation in pixel coordinates
 
@@ -26,6 +26,9 @@ class vtkWindow():
 
         # Create an actor
         self.arrowSource = vtk.vtkArrowSource()
+
+        self.focal_point = [0, 0, 0]
+
         # self.reader = vtk.vtkSTLReader()
         # self.reader.SetFileName(filename)
         # self.reader.Update()
@@ -80,37 +83,10 @@ class vtkWindow():
             actorVolume.SetProperty(propVolume)
 
             self.actor = actorVolume
-        else:
-            try:
-                polydata = self.get_polydata(filename)
-            except IOError as e:
-                print(e)
 
-            pd_center = polydata.GetCenter()
-            transform = vtk.vtkTransform()
-            # R = help_functions.get_rotation(-90, 0, 0) #(nicken (LinksUnten, von schulter zu schuler links oben, verneinen rechts Oben)
-            R = help_functions.get_rotation(0, 0, -90)
-            # t = np.matrix([[1.0, 0, 0, -pd_center[0]], [0, 1.0, 0, -pd_center[1]], [0, 0, 1.0, -pd_center[2] + 206 * (1 / 3)], [0, 0, 0, 1]])
-            t = np.matrix([[1.0, 0, 0, -pd_center[0]],
-                           [0, 1.0, 0, -pd_center[1]],
-                           [0, 0, 1.0, -pd_center[2]],
-                           [0, 0, 0, 1]])
-            transform.Identity()
-            matrix = help_functions.GetVTKMatrix(R * t)
-            transform.Concatenate(matrix)
-
-            transformFilter = vtk.vtkTransformPolyDataFilter()
-            transformFilter.SetInputData(polydata)
-            transformFilter.SetTransform(transform)
-            transformFilter.Update()
-            pdm = vtk.vtkPolyDataMapper()
-            pdm.SetInputConnection(transformFilter.GetOutputPort())
-
-            self.actor = vtk.vtkActor()
-            self.actor.SetMapper(pdm)
-        self.ren.SetBackground(0.0, 0.0, 0.0)
-
+        self.actor = vtk.vtkActor()
         self.ren.AddActor(self.actor)
+        self.ren.SetBackground(0.0, 0.0, 0.0)
 
         self.vtkWidget.Initialize()
         self.iren.Initialize()
@@ -122,12 +98,16 @@ class vtkWindow():
         self.initial_camera = vtk.vtkCamera()
         # self.initial_camera.SetPosition(100, 0, 1000)
         self.initial_camera.DeepCopy(self.ren.GetActiveCamera())
+        #if filename:
+        #    self.display_file(filename)
         self.reset_view()
+
 
     def reset_view(self, x=-2000, y=-500, z=0):
         cam = self.ren.GetActiveCamera()
         cam.SetPosition(x, y, z)
         cam.SetViewUp(0, 0, 1)
+        cam.SetFocalPoint(self.focal_point[0], self.focal_point[1], self.focal_point[2])
         self.ren.ResetCamera()
         self.update()
 
@@ -154,7 +134,7 @@ class vtkWindow():
             raise IOError("Could not read %s" % filename)
         return reader.GetOutput()
 
-    def display_file(self, filename):
+    def display_file(self, filename, rot=[0,0,0], trans=[0,0,0], scale=[1,1,1], color=[1,1,1], reset_view=False):
         # supported_fileformats = ['.stl']
         # if not isfile(filename) or not splitext(filename)[1] in supported_fileformats:
         #    raise IOError('Could not read %s' % filename)
@@ -167,14 +147,18 @@ class vtkWindow():
             print(e)
 
         pd_center = polydata.GetCenter()
+        self.focal_point = pd_center
         transform = vtk.vtkTransform()
-        R = help_functions.get_rotation(0, 0, -90)
-        t = np.matrix([[1.0, 0, 0, -pd_center[0]],
-                       [0, 1.0, 0, -pd_center[1]],
-                       [0, 0, 1.0, -pd_center[2]],  # 1054.8
-                       [0, 0, 0, 1]])
+        R = help_functions.get_rotation(rot[0], rot[1], rot[2])
+        t = np.identity(4)
+        t[0:3,3] = (-1 * np.array(pd_center)) + np.array(trans)
+        t = np.matrix(t)
+        s = np.matrix(np.identity(4))
+        s[0,0] = scale[0]
+        s[1,1] = scale[1]
+        s[2,2] = scale[2]
         transform.Identity()
-        matrix = help_functions.GetVTKMatrix(R * t)
+        matrix = help_functions.GetVTKMatrix(s * R * t)
         transform.Concatenate(matrix)
 
         transformFilter = vtk.vtkTransformPolyDataFilter()
@@ -185,6 +169,11 @@ class vtkWindow():
         pdm.SetInputConnection(transformFilter.GetOutputPort())
 
         self.actor.SetMapper(pdm)
+
+        self.actor.GetProperty().SetColor(color[0], color[1], color[2])
+
+        if reset_view:
+            self.reset_view()
 
     def init_camera(self):
         initial_camera = vtk.vtkCamera()

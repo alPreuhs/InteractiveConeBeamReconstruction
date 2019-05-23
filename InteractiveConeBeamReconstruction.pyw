@@ -12,8 +12,9 @@ from SplashScreen import SplashScreen
 from InteractiveConeBeamReconstruction_GUI import Ui_Interactive_Cone_Beam_Reconstruction
 from VoxelizeWindow import VoxelizeMainWindow, VoxelizeWindow
 
-from vtkWindow import vtkWindow
-from include.help_functions import scale_mat_from_to, rot_mat_to_euler
+from include.vtkWindow import vtkWindow
+from include.help_functions import scale_mat_from_to, rot_mat_to_euler, dicom_to_numpy
+from include.Config_XML import Config_XML
 from Math.projection import create_default_projection_matrix, get_rotation_matrix_by_axis_and_angle
 from Math.vtk_proj_matrix import vtk_proj_matrix
 
@@ -71,9 +72,22 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.pixmap_fwd_proj = QGraphicsPixmapItem()
         self.pixmap_back_proj = QGraphicsPixmapItem()
 
+        self.config_xml_filename = 'config.xml'
+        self.config = Config_XML()
+        self.read_config_xml(filename=self.config_xml_filename)
+        print(self.config.config)
+
         # setup VTK widget
         self.vtk_handle = vtkWindow()
-        self.vtk_handle.vtkWidget(self.view_3D, filename=os.path.join('include', 'Head_Phantom.stl')) #'C-arm_simple.stl'
+        self.vtk_handle.vtkWidget(self.view_3D)
+        self.vtk_handle.display_file(
+            filename=self.config.config['mesh_filename'],
+            rot=self.config.config['mesh_rot'],
+            trans=self.config.config['mesh_trans'],
+            scale=self.config.config['mesh_scale'],
+            color=self.config.config['mesh_color'],
+            reset_view=True
+        )
 
         # init projection matrix for VTK widget
         sdd, sid = 700, 500
@@ -183,8 +197,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.timeline_anim.setDuration(4000)
         self.timeline_anim.frameChanged.connect(self.demo_acquisition)
 
-        voxels = np.load(os.path.join('include', 'Head_Phantom_voxelized.npz'))
-        self.phantom = voxels[voxels.files[0]]
+        # load phantom voxel data from file
+        self.set_phantom_from_file(self.config.config['phantom_filename'])
 
         # projections indices for the threads
         self.current_fwd_proj_idx = 0
@@ -204,6 +218,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         # when opening files or folders, save them for the next use
         self.last_opened_dir_3D = '.'
         self.last_opened_dir_xml = str(pathlib.Path.home())
+        self.last_opened_dir_phantom = '.'
 
         if show_splash_screen:
             splash.finish(self.MainWindow)
@@ -211,6 +226,12 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.MainWindow.showMaximized()
         self.resizeEvent()
 
+
+    def read_config_xml(self, filename):
+        if os.path.isfile(filename):
+            self.config.read(filename)
+        else:
+            self.config.init_config()
 
     def on_pB_fluoro(self):
         """Performs a single forward projection for the LAO/RAO angle 0°."""
@@ -244,21 +265,23 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
     def on_action_set_phantom(self):
         """Gets the phantom file name from a dialog and sets the voxel volume used for the forward projection."""
         phantom_filename, _ = QFileDialog.getOpenFileName(self.centralwidget, 'Choose phantom file',
-                                                          self.last_opened_dir_3D, 'Numpy (*.npy;*.npz)')
+                                                          self.last_opened_dir_phantom, 'Numpy (*.npy;*.npz)')
         if phantom_filename:
+            self.last_opened_dir_phantom = os.path.dirname(phantom_filename)
             self.set_phantom_from_file(phantom_filename)
 
     def set_phantom_from_file(self, filename: str):
         """
         Sets the voxel volume used for the forward projection from the given filename.
-        Supports numpy files (.npy) and numpy archives (.npz).
+        Supports numpy files (.npy), numpy archives (.npz) and DICOM (.dcm).
         """
-        phantom = np.load(filename)
         ext = os.path.splitext(filename)[1].lower()
-        if ext == '.npy':
-            self.phantom = phantom
-        elif ext == '.npz':
-            self.phantom = phantom[phantom.files[0]]
+        if ext.startswith('.np'):
+            self.phantom = np.load(filename)
+            if ext == '.npz':
+                self.phantom = self.phantom[self.phantom.files[0]]
+        elif ext == '.dcm':
+            self.phantom = dicom_to_numpy(filename)
         else:
             pass # TODO
 
@@ -459,7 +482,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                                                       self.last_opened_dir_xml, 'CONRAD (*.xml)')
             if not len(filename):
                 return
-            self.last_opened_dir_xml = os.path.split(filename)[0]
+            self.last_opened_dir_xml = os.path.dirname(filename)
         self.conrad_xml = filename
         config = Configuration.loadConfiguration(filename)
         geo = config.getGeometry()
@@ -509,7 +532,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                                                       self.last_opened_dir_xml, 'CONRAD (*.xml)')
             if not len(filename):
                 return
-            self.last_opened_dir_xml = os.path.split(filename)[0]
+            self.last_opened_dir_xml = os.path.dirname(filename)
         # create trajectory
         geo = self.conrad_circular_trajectory(
             n_proj=self.sB_num_proj.value(),
@@ -995,7 +1018,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                                                   '(*.stl *.ply *.vtp *.obj *.vtk *.vti *.g)')
         if not len(filename):
             return
-        self.last_opened_dir_3D = os.path.split(filename)[0]
+        self.last_opened_dir_3D = os.path.dirname(filename)
         self.vtk_handle.display_file(filename)
 
     def resizeEvent(self):

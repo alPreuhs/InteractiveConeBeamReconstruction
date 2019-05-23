@@ -1,0 +1,16 @@
+<InteractiveConeBeamReconstruction version="0.1">
+  <PhantomFilename value="data\Head_Phantom.npz"/>
+  <MeshFilename value="data\Head_Phantom.stl"/>
+  <MeshRotation value="0. 0. -90."/>
+  <MeshTranslation value="0. 0. 0."/>
+  <MeshScale value="1. 1. 1."/>
+  <MeshColor value="1. 1. 1."/>
+  <!--
+  <PhantomFilename value="data\CT_Head.npz"/>
+  <MeshFilename value="data\CT_Head.stl"/>
+  <MeshRotation value="180. 0. 90."/>
+  <MeshTranslation value="0. 0. 0."/>
+  <MeshScale value="0.25 0.25 0.25"/>
+  <MeshColor value="0.69411765 0.47843137 0.39607843"/>
+  -->
+</InteractiveConeBeamReconstruction>
