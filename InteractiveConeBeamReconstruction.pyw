@@ -3,6 +3,7 @@ import os
 import pathlib
 import traceback
 import numpy as np
+from enum import Enum
 
 from PyQt5.QtCore import Qt, QTranslator, pyqtSignal, QTimeLine, qFatal
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QGraphicsScene, QMessageBox, QDialog
@@ -75,7 +76,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.config_xml_filename = 'config.xml'
         self.config = Config_XML()
         self.read_config_xml(filename=self.config_xml_filename)
-        print(self.config.config)
 
         # setup VTK widget
         self.vtk_handle = vtkWindow()
@@ -213,6 +213,11 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.fwd_proj_play_loop = False
         self.back_proj_play_loop = False
 
+        self.perform_reco_after_proj = False
+
+        self.plane_modes = Enum('Plane mode', 'Axial Sagittal Coronal')
+        self.plane_mode = self.plane_modes.Axial
+
         self.current_language = 'en_GB'
 
         # when opening files or folders, save them for the next use
@@ -265,7 +270,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
     def on_action_set_phantom(self):
         """Gets the phantom file name from a dialog and sets the voxel volume used for the forward projection."""
         phantom_filename, _ = QFileDialog.getOpenFileName(self.centralwidget, 'Choose phantom file',
-                                                          self.last_opened_dir_phantom, 'Numpy (*.npy;*.npz)')
+                                                          self.last_opened_dir_phantom, 'Numpy (*.npy;*.npz);;DICOM (*.dcm)')
         if phantom_filename:
             self.last_opened_dir_phantom = os.path.dirname(phantom_filename)
             self.set_phantom_from_file(phantom_filename)
@@ -760,6 +765,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
                 button.setDisabled(False)
             self.statusBar.clearMessage()
+            if self.perform_reco_after_proj:
+                self.on_pB_back_proj()
 
     def on_filter_cB_changed(self):
         """Updates the displayed image of the filtered forward projection."""
@@ -805,7 +812,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.scroll_back_proj.setMaximum(zmax - 1)
         self.back_proj = np.zeros(shape=(zmax, ymax, xmax))
         self.back_proj_uint8 = np.zeros(shape=(zmax, ymax, xmax), dtype=np.uint8)
-        self.back_proj_disp = np.zeros(shape=(zmax, ymax, xmax), dtype=np.uint8)
+        #self.back_proj_disp = np.zeros(shape=(zmax, ymax, xmax), dtype=np.uint8)
         self.on_speed_changed()
         self.timeline_back_proj.setFrameRange(0, self.fwd_proj.shape[0] - 1)
         if self.rB_all.isChecked(): # backproject all at once
@@ -862,14 +869,14 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                     self.fwd_proj.shape[0] - 1:
                 self.back_project()
             else:
-                self.generate_viewing_planes()
+                #self.generate_viewing_planes()
                 self.on_plane_sel_changed()
                 self.back_proj_completed = True
                 for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
                     button.setDisabled(False)
                 self.statusBar.clearMessage()
         else:
-            self.generate_viewing_planes()
+            #self.generate_viewing_planes()
             self.on_plane_sel_changed()
             self.back_proj_completed = True
             for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
@@ -878,6 +885,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def generate_viewing_planes(self):
         """Rotates the reconstructed volume to show axial, sagittal and coronal planes."""
+        # currently not used
         # TODO: check if rotations are correct
         self.back_proj_axial = np.rot90(self.back_proj_uint8, 2, (1, 2))
         self.back_proj_axial = np.rot90(self.back_proj_axial, 2, (0, 2))
@@ -893,18 +901,32 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             return
         currentText = self.comboBox_plane_sel.currentText()
         if currentText == 'Axial':
-            self.back_proj_disp = self.back_proj_axial
+            self.plane_mode = self.plane_modes.Axial
         elif currentText == 'Sagittal':
-            self.back_proj_disp = self.back_proj_sagittal
+            self.plane_mode = self.plane_modes.Sagittal
         elif currentText == 'Coronal':
-            self.back_proj_disp = self.back_proj_coronal
-        self.display_image(self.gV_back_proj, self.back_proj_disp[0])
+            self.plane_mode = self.plane_modes.Coronal
+        frame_max = self.get_back_proj_frame_max()
+        #self.back_proj_disp = self.back_proj_uint8
+        #self.display_image(self.gV_back_proj, self.back_proj_disp[0])
+        self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=0))
         self.scroll_back_proj.setValue(0)
-        self.scroll_back_proj.setMaximum(self.back_proj_disp.shape[0] - 1)
-        self.timeline_back_proj.setFrameRange(0, self.back_proj_disp.shape[0] - 1)
-        self.on_speed_changed()
+        self.scroll_back_proj.setMaximum(frame_max)
+        self.timeline_back_proj.setFrameRange(0, frame_max)
+        self.on_speed_changed(back_proj_frame_max=frame_max)
 
-    def on_speed_changed(self):
+    def get_back_proj_frame_max(self):
+        if not self.back_proj_loaded: # if not self.back_proj_completed
+            return 0
+        if self.plane_mode == self.plane_modes.Axial:
+            return self.back_proj_uint8.shape[0] - 1
+        elif self.plane_mode == self.plane_modes.Sagittal:
+            return self.back_proj_uint8.shape[1] - 1
+        elif self.plane_mode == self.plane_modes.Coronal:
+            return self.back_proj_uint8.shape[2] - 1
+        print(self.plane_mode)
+
+    def on_speed_changed(self, back_proj_frame_max=None):
         """Updates the timeline durations for the slide shows."""
         if not self.fwd_proj_completed and not self.back_proj_completed:
             return
@@ -918,7 +940,9 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.timeline_fwd_proj.setDuration(frame_duration * self.fwd_proj_filtered_uint8.shape[0])
         self.timeline_fwd_proj.setUpdateInterval(frame_duration)
         self.timeline_fwd_proj.setCurrentTime(self.timeline_fwd_proj.duration() * current_val_fwd_proj)
-        self.timeline_back_proj.setDuration(frame_duration * (self.back_proj_disp.shape[0] if self.back_proj_completed else 1))
+        if back_proj_frame_max is None:
+            back_proj_frame_max = self.get_back_proj_frame_max()
+        self.timeline_back_proj.setDuration(frame_duration * back_proj_frame_max)
         self.timeline_back_proj.setUpdateInterval(frame_duration)
         self.timeline_back_proj.setCurrentTime(self.timeline_back_proj.duration() * current_val_back_proj)
         if self.fwd_proj_playing:
@@ -987,8 +1011,28 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def on_scroll_back_proj(self):
         """Updates the back projection images in the graphicsview when the slider is changed."""
-        if self.back_proj_loaded:
-            self.display_image(self.gV_back_proj, self.back_proj_disp[self.scroll_back_proj.value()])
+        if  self.back_proj_loaded:
+            self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=self.scroll_back_proj.value()))
+
+    def get_image_for_current_view(self, slice):
+        """
+        Gets the 2D image from the reconstructed volume for the currently selected view: axial / sagittal / coronal.
+        """
+        if self.plane_mode == self.plane_modes.Axial:
+            # axial view from top to bottom --> access volume from end (-1) to start (0)
+            # top: anterior, bottom: posterior
+            # left: right, right: left
+            return np.rot90(self.back_proj_uint8[self.back_proj_uint8.shape[0] - 1 - slice, :, :], k=-1)
+        elif self.plane_mode == self.plane_modes.Sagittal:
+            # sagittal view from left to right
+            # top: super / cranial, bottom: inferior / caudal
+            # left: anterior, right: posterior
+            return self.back_proj_uint8[:, slice, :]
+        elif self.plane_mode == self.plane_modes.Coronal:
+            # coronal view from back to front --> access volume from end (-1) to start (0)
+            # top: superior, bottom: inferior
+            # left: right, right: left --> fliplr
+            return np.fliplr(self.back_proj_uint8[:, :, self.back_proj_uint8.shape[2] - 1 - slice])
 
     def display_image_fwd_proj(self):
         if self.fwd_proj_loaded:
