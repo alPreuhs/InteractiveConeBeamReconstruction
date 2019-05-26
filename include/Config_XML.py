@@ -28,8 +28,8 @@ class Config_XML():
 
     def write(self, filename):
         root = etree.Element('InteractiveConeBeamReconstruction', version='0.1')
-        etree.SubElement(root, 'PhantomFilename', value=self.config['phantom_filename'].replace(os.path.realpath('..'), '')[1:])
-        etree.SubElement(root, 'MeshFilename', value=self.config['mesh_filename'].replace(os.path.realpath('..'), '')[1:])
+        etree.SubElement(root, 'PhantomFilename', value=self.config['phantom_filename'].replace(os.path.realpath(self.project_dir), '')[1:])
+        etree.SubElement(root, 'MeshFilename', value=self.config['mesh_filename'].replace(os.path.realpath(self.project_dir), '')[1:])
         etree.SubElement(root, 'MeshRotation', value=np.array2string(self.config['mesh_rot'])[1:-1])
         etree.SubElement(root, 'MeshTranslation', value=np.array2string(self.config['mesh_trans'])[1:-1])
         etree.SubElement(root, 'MeshScale', value=np.array2string(self.config['mesh_scale'])[1:-1])
