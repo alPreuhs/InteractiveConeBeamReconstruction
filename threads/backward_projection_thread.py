@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QThread, pyqtSignal
 import pyconrad.autoinit
-from jpype import attachThreadToJVM, detachThreadFromJVM
+from jpype import attachThreadToJVM, detachThreadFromJVM, JavaException
 import time
 import numpy as np
 from edu.stanford.rsl.conrad.data.numeric import Grid2D, Grid3D
@@ -22,17 +22,22 @@ class backwardProjectionThread(QThread):
         return self.back_proj.as_numpy()
 
     def run(self):
+        self.error = {}
         attachThreadToJVM()
-        if self.use_cl:
-            if self.proj_idx is None:
-                self.back_proj = self.cone_beam_back_projector.backprojectPixelDrivenCL(self.fwd_proj)
+        try:
+            if self.use_cl:
+                if self.proj_idx is None:
+                    self.back_proj = self.cone_beam_back_projector.backprojectPixelDrivenCL(self.fwd_proj)
+                else:
+                    self.back_proj = self.cone_beam_back_projector.backprojectPixelDrivenCL(self.fwd_proj, self.proj_idx)
             else:
-                self.back_proj = self.cone_beam_back_projector.backprojectPixelDrivenCL(self.fwd_proj, self.proj_idx)
-        else:
-            if self.proj_idx is None:
-                self.back_proj = self.cone_beam_back_projector.backprojectPixelDriven(self.fwd_proj)
-            else:
-                slice = self.fwd_proj.getSubGrid(self.slice_idx)
-                self.back_proj = self.cone_beam_back_projector.backprojectPixelDriven(slice, self.proj_idx)
+                if self.proj_idx is None:
+                    self.back_proj = self.cone_beam_back_projector.backprojectPixelDriven(self.fwd_proj)
+                else:
+                    slice = self.fwd_proj.getSubGrid(self.slice_idx)
+                    self.back_proj = self.cone_beam_back_projector.backprojectPixelDriven(slice, self.proj_idx)
+        except JavaException as exception:
+            self.error['message'] = exception.message()
+            self.error['stacktrace'] = exception.stacktrace()
         detachThreadFromJVM()
         self.back_proj_finished.emit('finished')

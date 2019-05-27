@@ -159,6 +159,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.fwd_proj_thread.finished.connect(self.on_fwd_proj_finished)
         self.fluoro_thread = forwardProjectionThread()
         self.fluoro_thread.finished.connect(self.on_fluoro_finished)
+        self.fluoro_thread.parent = self
         self.back_proj_thread = backwardProjectionThread()
         self.back_proj_thread.finished.connect(self.on_back_proj_finished)
 
@@ -247,13 +248,24 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             msg = 'Fluoro'
         self.statusBar.showMessage(msg)
         self.save_configuration(filename=self.conrad_xml)
-        self.fluoro_thread.init(phantom=self.phantom, proj_idx=0, use_cl=self.cB_use_cl.isChecked())
+        self.fluoro_thread.init(phantom=self.phantom, proj_idx=0, use_cl=self.cB_use_cl.isChecked(), parent=self)
         self.fluoro_thread.start()
 
     def on_fluoro_finished(self):
         """Displays the fluoro image when the thread is finished."""
-        fluoro = scale_mat_from_to(self.fluoro_thread.get_fwd_proj()) # scale to 0 to 255
-        self.display_image(self.gV_fwd_proj, fluoro)
+        if len(self.fluoro_thread.error):
+            msg = 'Could not perform fluoro. Volume dimensions possibly incorrect. Try clicking in "Set to phantom size".'
+            if self.current_language == 'de_DE':
+                msg = 'Fluoro konnte nicht durchgeführt werden. Möglicherweiße ist die Größe des Volumens falsch gesetzt. Klicke auf "Phantomgröße setzen".'
+            self.msg_window(
+                windowTitle='Error',
+                text=msg,
+                detailedText=self.fluoro_thread.error['message']+'\n\n'+self.fluoro_thread.error['stacktrace'],
+                icon=self.get_icon('warning')
+            )
+        else:
+            fluoro = scale_mat_from_to(self.fluoro_thread.get_fwd_proj()) # scale to 0 to 255
+            self.display_image(self.gV_fwd_proj, fluoro)
         for button in [self.pB_fluoro, self.pB_fwd_proj, self.pB_back_proj]:
             button.setDisabled(False)
         self.statusBar.clearMessage()
@@ -694,6 +706,20 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         """
         Displays the (current) forward projection and starts the next projection or starts the filtering when the projection is done.
         """
+        if len(self.fwd_proj_thread.error):
+            msg = 'Could not perform forward projection. Volume dimensions possibly incorrect. Try clicking in "Set to phantom size".'
+            if self.current_language == 'de_DE':
+                msg = 'Vorwärtsprojektion konnte nicht durchgeführt werden. Möglicherweiße ist die Größe des Volumens falsch gesetzt. Klicke auf "Phantomgröße setzen".'
+            self.msg_window(
+                windowTitle='Error',
+                text=msg,
+                detailedText=self.fwd_proj_thread.error['message']+'\n\n'+self.fwd_proj_thread.error['stacktrace'],
+                icon=self.get_icon('warning')
+            )
+            for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
+                button.setDisabled(False)
+            self.statusBar.clearMessage()
+            return
         self.fwd_proj_loaded = True
         current_proj = self.fwd_proj_thread.get_fwd_proj()
         if self.fwd_proj_slice_by_slice:
@@ -755,14 +781,56 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def on_filter_finished(self, cosine, ramlak):
         if cosine and ramlak:
+            if len(self.filter_thread_cosine_ramlak.error):
+                msg = 'Could not filter projections.'
+                if self.current_language == 'de_DE':
+                    msg = 'Projektionen konnten nicht gefiltert werden.'
+                self.msg_window(
+                    windowTitle='Error',
+                    text=msg,
+                    detailedText=self.filter_thread_cosine_ramlak.error['message'] + '\n\n' + self.filter_thread_cosine_ramlak.error['stacktrace'],
+                    icon=self.get_icon('warning')
+                )
+                for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
+                    button.setDisabled(False)
+                self.statusBar.clearMessage()
+                return
             self.fwd_proj_filtered_cosine_ramlak = self.filter_thread_cosine_ramlak.get_fwd_proj_filtered()
             self.fwd_proj_filtered_cosine_ramlak_uint8 = scale_mat_from_to(self.fwd_proj_filtered_cosine_ramlak)
             self.filter_cosine_ramlak_done = True
         elif cosine and not ramlak:
+            if len(self.filter_thread_cosine.error):
+                msg = 'Could not filter projections.'
+                if self.current_language == 'de_DE':
+                    msg = 'Projektionen konnten nicht gefiltert werden.'
+                self.msg_window(
+                    windowTitle='Error',
+                    text=msg,
+                    detailedText=self.filter_thread_cosine.error['message'] + '\n\n' + self.filter_thread_cosine.error['stacktrace'],
+                    icon=self.get_icon('warning')
+                )
+                for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
+                    button.setDisabled(False)
+                self.statusBar.clearMessage()
+                return
             self.fwd_proj_filtered_cosine = self.filter_thread_cosine.get_fwd_proj_filtered()
             self.fwd_proj_filtered_cosine_uint8 = scale_mat_from_to(self.fwd_proj_filtered_cosine)
             self.filter_cosine_done = True
         elif not cosine and ramlak:
+            if len(self.filter_thread_ramlak.error):
+                msg = 'Could not filter projections.'
+                if self.current_language == 'de_DE':
+                    msg = 'Projektionen konnten nicht gefiltert werden.'
+                self.msg_window(
+                    windowTitle='Error',
+                    text=msg,
+                    detailedText=self.filter_thread_ramlak.error['message'] + '\n\n' + self.filter_thread_ramlak.error['stacktrace'],
+                    icon=self.get_icon('warning')
+                )
+                for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
+                    button.setDisabled(False)
+                self.statusBar.clearMessage()
+                return
             self.fwd_proj_filtered_ramlak = self.filter_thread_ramlak.get_fwd_proj_filtered()
             self.fwd_proj_filtered_ramlak_uint8 = scale_mat_from_to(self.fwd_proj_filtered_ramlak)
             self.filter_ramlak_done = True
@@ -857,6 +925,20 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.back_proj_thread.start()
 
     def on_back_proj_finished(self):
+        if len(self.back_proj_thread.error):
+            msg = 'Could not perform back projection.'
+            if self.current_language == 'de_DE':
+                msg = 'Rückprojektion konnte nicht durchgeführt werden'
+            self.msg_window(
+                windowTitle='Error',
+                text=msg,
+                detailedText=self.back_proj_thread.error['message']+'\n\n'+self.back_proj_thread.error['stacktrace'],
+                icon=self.get_icon('warning')
+            )
+            for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
+                button.setDisabled(False)
+            self.statusBar.clearMessage()
+            return
         current_reco = self.back_proj_thread.get_back_proj()
         if self.back_proj_slice_by_slice:
             self.back_proj = np.add(self.back_proj, current_reco) # TODO: check conrad function
