@@ -3,6 +3,7 @@ import pyconrad.autoinit
 from jpype import attachThreadToJVM, detachThreadFromJVM
 import time
 import numpy as np
+from pyconrad import JArray, JDouble
 from edu.stanford.rsl.conrad.data.numeric import Grid2D, Grid3D
 from edu.stanford.rsl.conrad.phantom import NumericalSheppLogan3D
 from edu.stanford.rsl.tutorial.cone import ConeBeamProjector, ConeBeamBackprojector, ConeBeamCosineFilter
@@ -11,9 +12,10 @@ from edu.stanford.rsl.tutorial.cone import ConeBeamProjector, ConeBeamBackprojec
 class forwardProjectionThread(QThread):
     fwd_proj_finished = pyqtSignal(str)
 
-    def init(self, phantom, proj_idx=None, use_cl=True):
+    def init(self, phantom, spacing=[1,1,1], proj_idx=None, use_cl=True):
         self.use_cl = use_cl
         self.phantom = Grid3D.from_numpy(phantom)
+        self.phantom.setSpacing(JArray(JDouble)(list(spacing)))
         self.proj_idx = int(proj_idx) if proj_idx is not None else proj_idx
 
     def get_fwd_proj(self):

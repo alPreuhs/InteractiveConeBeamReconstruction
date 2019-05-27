@@ -21,7 +21,7 @@ from Math.vtk_proj_matrix import vtk_proj_matrix
 
 import jpype
 import pyconrad
-pyconrad.setup_pyconrad(min_ram='1G')
+pyconrad.setup_pyconrad(min_ram='2G')
 
 from threads.forward_projection_thread import forwardProjectionThread
 from threads.backward_projection_thread import backwardProjectionThread
@@ -557,7 +557,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             pix_dim_y=self.sB_pix_dim_y.value(),
             reco_dim_x=self.sB_reco_dim_x.value(),
             reco_dim_y=self.sB_reco_dim_y.value(),
-            reco_dim_z=self.sB_reco_dim_z.value()
+            reco_dim_z=self.sB_reco_dim_z.value(),
+            reco_voxel_spacing_x=self.sB_reco_spacing_x.value(),
+            reco_voxel_spacing_y=self.sB_reco_spacing_y.value(),
+            reco_voxel_spacing_z=self.sB_reco_spacing_z.value()
         )
         self.conrad_config.setGeometry(geo)
         self.num_proj_mats = self.sB_num_proj.value()
@@ -592,7 +595,9 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             ang_start=0,
             det_width=620, det_height=480,
             pix_dim_x=1.0, pix_dim_y=1.0,
-            reco_dim_x=256, reco_dim_y=256, reco_dim_z=256):
+            reco_dim_x=256, reco_dim_y=256, reco_dim_z=256,
+            reco_voxel_spacing_x=1.0, reco_voxel_spacing_y=1.0, reco_voxel_spacing_z=1.0
+        ):
         """Returns conrad trajectory for the current configuration."""
         if type(u_dir) == str:
             u_dir = self.get_camera_axis_direction_from_string(u_dir)
@@ -615,7 +620,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         trajectory.setReconDimensionX(int(reco_dim_x))
         trajectory.setReconDimensionY(int(reco_dim_y))
         trajectory.setReconDimensionZ(int(reco_dim_z))
-        trajectory.setReconVoxelSizes([1.0, 1.0, 1.0])
+        #trajectory.setReconVoxelSizes([1.0, 1.0, 1.0])
+        trajectory.setVoxelSpacingX(reco_voxel_spacing_x)
+        trajectory.setVoxelSpacingY(reco_voxel_spacing_y)
+        trajectory.setVoxelSpacingZ(reco_voxel_spacing_z)
         trajectory.setOriginInPixelsX(float(reco_dim_x / 2))  # center
         trajectory.setOriginInPixelsY(float(reco_dim_y / 2))
         trajectory.setOriginInPixelsZ(float(reco_dim_z / 2))
@@ -646,13 +654,14 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         num_projs = geo.getProjectionStackSize()
         det_height = geo.getDetectorHeight()
         det_width = geo.getDetectorWidth()
+        spacing = [geo.getVoxelSpacingX(), geo.getVoxelSpacingY(), geo.getVoxelSpacingZ()]
         self.fwd_proj = np.ndarray(shape=(num_projs, det_height, det_width)) # resulting forward projection
         self.fwd_proj_uint8 = np.ndarray(shape=(num_projs, det_height, det_width), dtype=np.uint8) # scaled to 0 to 255
         self.fwd_proj_filtered_uint8 = np.ndarray(shape=(num_projs, det_height, det_width), dtype=np.uint8) # filtered
         self.on_speed_changed()
         self.timeline_fwd_proj.setFrameRange(0, num_projs - 1)
         self.scroll_fwd_proj.setMaximum(num_projs - 1)
-        self.fwd_proj_thread.init(phantom=self.phantom, use_cl=self.cB_use_cl.isChecked())
+        self.fwd_proj_thread.init(phantom=self.phantom, spacing=spacing, use_cl=self.cB_use_cl.isChecked())
         if self.rB_all.isChecked(): # project all frames at once
             self.current_fwd_proj_idx = None
             self.fwd_proj_slice_by_slice = False
