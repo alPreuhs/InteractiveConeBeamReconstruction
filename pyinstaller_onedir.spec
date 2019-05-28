@@ -11,12 +11,14 @@ with open(curr_dir + '/pyconrad/deleteMe.txt', 'w') as deleteMe:
 	
 added_files = [
     (curr_dir + '/dependency/*.py', 'dependency'),
-	(curr_dir + '/include/*', 'include'),
+	(curr_dir + '/data/Head_Phantom.*', 'data'),
+	(curr_dir + '/include/*.py', 'include'),
 	(curr_dir + '/icons/*', 'icons'),
 	(curr_dir + '/languages/*', 'languages'),
 	(curr_dir + '/Math/*.py', 'Math'),
 	(curr_dir + '/threads/*.py', 'threads'),
-	(curr_dir + '/*.npy', '.'),
+	(curr_dir + '/config.xml', '.'),
+	#(curr_dir + '/*.npy', '.'),
 	(curr_dir + '/pyconrad/deleteMe.txt', 'pyconrad')
 ]
 
