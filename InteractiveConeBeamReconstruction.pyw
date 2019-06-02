@@ -947,7 +947,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.back_proj_uint8 = scale_mat_from_to(self.back_proj)
         self.back_proj_loaded = True
         if self.back_proj_slice_by_slice:
-            # TODO: show correct plane --> generate viewing planes
+            # TODO: show correct plane --> can only show axial slice because of the reconstruction iteration
             self.display_image(self.gV_back_proj, self.back_proj_uint8[self.current_back_proj_slice_idx])
             if self.current_back_proj_idx < self.num_proj_mats - 1:
                 self.current_back_proj_idx += 1
@@ -1194,6 +1194,7 @@ class Window(QMainWindow):
 
 if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True) # support high DPI displays
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True) # use high dpi svg icons
     app = QApplication(sys.argv)
     MainWindow = Window()
     prog = InteractiveConeBeamReconstruction(MainWindow, app)
