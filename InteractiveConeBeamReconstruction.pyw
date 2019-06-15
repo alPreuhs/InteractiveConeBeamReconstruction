@@ -129,6 +129,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.action_save_config.triggered.connect(lambda _: self.save_configuration(filename=''))
         self.action_voxelize.triggered.connect(self.on_action_voxelize)
         self.action_set_phantom.triggered.connect(self.on_action_set_phantom)
+        self.action_show_3D.triggered.connect(self.on_action_show_3D)
+        self.action_show_fwd_proj.triggered.connect(self.on_action_show_fwd_proj)
+        self.action_show_back_proj.triggered.connect(self.on_action_show_back_proj)
+        self.action_show_config.triggered.connect(self.on_action_show_config_tabs)
 
         # connect (horizontal) scroll bars
         self.scroll_fwd_proj.sliderMoved.connect(self.on_scroll_fwd_proj)
@@ -1155,6 +1159,32 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             return
         self.last_opened_dir_3D = os.path.dirname(filename)
         self.vtk_handle.display_file(filename)
+
+    def show_3d(self, show=True):
+        self.frame_3D.setVisible(show)
+
+    def on_action_show_3D(self):
+        self.show_3d(self.action_show_3D.isChecked())
+
+    def show_fwd_proj(self, show=True):
+        for frame in [self.frame_fwd_proj, self.frame_fwd_proj_btns]:
+            frame.setVisible(show)
+
+    def on_action_show_fwd_proj(self):
+        self.show_fwd_proj(self.action_show_fwd_proj.isChecked())
+
+    def show_back_proj(self, show=True):
+        for frame in [self.frame_back_proj, self.frame_back_proj_btns]:
+            frame.setVisible(show)
+
+    def on_action_show_back_proj(self):
+        self.show_back_proj(self.action_show_back_proj.isChecked())
+
+    def show_config_tabs(self, show=True):
+        self.config_tabs.setVisible(show)
+
+    def on_action_show_config_tabs(self):
+        self.show_config_tabs(self.action_show_config.isChecked())
 
     def resizeEvent(self):
         self.gV_fwd_proj.fitInView(self.pixmap_fwd_proj.boundingRect(), Qt.KeepAspectRatio)
