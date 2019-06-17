@@ -1160,31 +1160,57 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.last_opened_dir_3D = os.path.dirname(filename)
         self.vtk_handle.display_file(filename)
 
-    def show_3d(self, show=True):
+    def show_3D(self, show=True):
         self.frame_3D.setVisible(show)
+        self.resizeEvent()
 
     def on_action_show_3D(self):
-        self.show_3d(self.action_show_3D.isChecked())
+        self.show_3D(self.action_show_3D.isChecked())
+        # workaround because calling only resizeEvent does not work
+        if self.frame_fwd_proj.isVisible():
+            for s in [False, True]:
+                self.show_fwd_proj(s)
+        if self.frame_back_proj.isVisible():
+            for s in [False, True]:
+                self.show_back_proj(s)
 
     def show_fwd_proj(self, show=True):
         for frame in [self.frame_fwd_proj, self.frame_fwd_proj_btns]:
             frame.setVisible(show)
+        self.resizeEvent()
 
     def on_action_show_fwd_proj(self):
         self.show_fwd_proj(self.action_show_fwd_proj.isChecked())
+        # workaround because calling only resizeEvent does not work
+        if self.frame_back_proj.isVisible():
+            for s in [False, True]:
+                self.show_back_proj(s)
 
     def show_back_proj(self, show=True):
         for frame in [self.frame_back_proj, self.frame_back_proj_btns]:
             frame.setVisible(show)
+        self.resizeEvent()
 
     def on_action_show_back_proj(self):
         self.show_back_proj(self.action_show_back_proj.isChecked())
+        # workaround because calling only resizeEvent does not work
+        if self.frame_fwd_proj.isVisible():
+            for s in [False, True]:
+                self.show_fwd_proj(s)
 
     def show_config_tabs(self, show=True):
         self.config_tabs.setVisible(show)
+        self.resizeEvent()
 
     def on_action_show_config_tabs(self):
         self.show_config_tabs(self.action_show_config.isChecked())
+        # workaround because calling only resizeEvent does not work
+        if self.frame_fwd_proj.isVisible():
+            for s in [False, True]:
+                self.show_fwd_proj(s)
+        if self.frame_back_proj.isVisible():
+            for s in [False, True]:
+                self.show_back_proj(s)
 
     def resizeEvent(self):
         self.gV_fwd_proj.fitInView(self.pixmap_fwd_proj.boundingRect(), Qt.KeepAspectRatio)
