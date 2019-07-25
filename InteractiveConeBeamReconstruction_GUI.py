@@ -2,12 +2,11 @@
 
 # Form implementation generated from reading ui file 'InteractiveConeBeamReconstruction_GUI.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.1
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_Interactive_Cone_Beam_Reconstruction(object):
     def setupUi(self, Interactive_Cone_Beam_Reconstruction):
@@ -403,6 +402,7 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.pB_reset_config.setObjectName("pB_reset_config")
         self.vLayout_config_btns.addWidget(self.pB_reset_config)
         self.cB_use_cl = QtWidgets.QCheckBox(self.config_tab_advanced)
+        self.cB_use_cl.setChecked(True)
         self.cB_use_cl.setObjectName("cB_use_cl")
         self.vLayout_config_btns.addWidget(self.cB_use_cl)
         self.horizontalLayout.addLayout(self.vLayout_config_btns)
@@ -774,8 +774,6 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.action_show_config.setText(_translate("Interactive_Cone_Beam_Reconstruction", "Configuration"))
 
 
-
-
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
@@ -784,3 +782,4 @@ if __name__ == "__main__":
     ui.setupUi(Interactive_Cone_Beam_Reconstruction)
     Interactive_Cone_Beam_Reconstruction.show()
     sys.exit(app.exec_())
+
