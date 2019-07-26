@@ -546,7 +546,7 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.vLayout_back_proj = QtWidgets.QVBoxLayout(self.frame_back_proj)
         self.vLayout_back_proj.setContentsMargins(0, 0, 0, 0)
         self.vLayout_back_proj.setObjectName("vLayout_back_proj")
-        self.gV_back_proj = QtWidgets.QGraphicsView(self.frame_back_proj)
+        self.gV_back_proj = GraphicsView(self.frame_back_proj)
         self.gV_back_proj.setStyleSheet("background: black;\n"
 "border: none")
         self.gV_back_proj.setObjectName("gV_back_proj")
@@ -773,6 +773,7 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.action_show_back_proj.setText(_translate("Interactive_Cone_Beam_Reconstruction", "Backprojection"))
         self.action_show_config.setText(_translate("Interactive_Cone_Beam_Reconstruction", "Configuration"))
 
+from GraphicsView import GraphicsView
 
 if __name__ == "__main__":
     import sys

@@ -1128,7 +1128,7 @@ N</string>
           <number>0</number>
          </property>
          <item>
-          <widget class="QGraphicsView" name="gV_back_proj">
+          <widget class="GraphicsView" name="gV_back_proj">
            <property name="styleSheet">
             <string notr="true">background: black;
 border: none</string>
@@ -1352,6 +1352,13 @@ border: none</string>
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>GraphicsView.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
