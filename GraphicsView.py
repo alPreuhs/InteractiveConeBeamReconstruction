@@ -17,41 +17,43 @@ class GraphicsView(QGraphicsView):
         self.window_width = 0
         self.window_min = 0
         self.window_max = 0
-        self.set_HU_range(-1000, 3096)
+        self.use_windowing = False
 
-    def set_image(self, image, update=True):
+    def set_image(self, image, scale_full_range=False, shift=None):
         self.image = np.copy(image)
-        image_min = self.image.min()
-        image_max = self.image.max()
-        if image_min < 0:
-            self.image += abs(image_min)
-        self.image_range = self.image.max() - image_min
-        #self.window_min, self.window_max = image_min, image_max
-        if update:
-            self.update()
+        self.image += shift if shift is not None else abs(self.image.min())
+        #self.image_max = self.image.max()
+        #self.image_min = self.image.min()
+        if scale_full_range:
+            self.window_min, self.window_max = self.image.min(), self.image.max()
+        self.update()
+
+    def set_image_as_pixmap(self, image, scale_to_8bit=False):
+        img = np.copy(image)
+        if scale_to_8bit:
+            img_min = img.min()
+            if img_min < 0:
+                img_min += abs(img_min)
+            img = np.interp(img, (img_min, img.max()), (0, 255)).astype(np.uint8)
+        self.pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(img)))
+        self.graphics_scene.removeItem(self.graphics_scene.items()[0])
+        self.graphics_scene.addItem(self.pixmap_item)
 
     def update(self):
-        image = np.copy(self.image)
-        image = np.interp(image, (self.window_min, self.window_max), (0, 255)).astype(np.uint8)
-        self.pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(np.copy(image))))
+        image = np.interp(np.copy(self.image), (self.window_min, self.window_max), (0, 255)).astype(np.uint8)
+        self.pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(image)))
         self.graphics_scene.removeItem(self.graphics_scene.items()[0])
         self.graphics_scene.addItem(self.pixmap_item)
 
     def mouseMoveEvent(self, event):
+        if not self.use_windowing: return
         pos = event.pos()
-        x, y = pos.x(), pos.y()
-        x_max, y_max = self.width(), self.height()
-        #self.window_center = self.image_range * y / y_max
-        self.window_center = self.image.max() * y / y_max
-        self.window_width = self.image.max() * x / x_max
+        self.window_center = self.image_max * pos.y() / self.height()
+        self.window_width = (self.image_max-self.image_min) * pos.x() / self.width()
         half_window_width = self.window_width * 0.5
         self.window_min = self.window_center - half_window_width
         self.window_max = self.window_center + half_window_width
         self.update()
 
-    def set_HU_range(self, HU_min, HU_max):
-        self.HU_min, self.HU_max = HU_min, HU_max
-        self.HU_range = self.HU_max - self.HU_min
-
-    def resizeEvent(self, event):
+    def resizeEvent(self, event=None):
         self.fitInView(self.pixmap_item.boundingRect(), Qt.KeepAspectRatio)

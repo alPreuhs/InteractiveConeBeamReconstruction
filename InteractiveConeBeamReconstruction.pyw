@@ -6,7 +6,7 @@ import numpy as np
 from enum import Enum
 
 from PyQt5.QtCore import Qt, QTranslator, pyqtSignal, QTimeLine, qFatal
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QGraphicsScene, QMessageBox, QDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QGraphicsScene, QMessageBox, QDialog, QRadioButton
 from PyQt5.QtGui import QPixmap, QIcon
 from qimage2ndarray import array2qimage
 from SplashScreen import SplashScreen
@@ -152,6 +152,11 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.pB_set_reco_dim.clicked.connect(lambda _: self.set_reco_dim(x=None, y=None, z=None))
         self.pB_fluoro.clicked.connect(self.on_pB_fluoro)
 
+        #for el in self.gB_windowing.children():
+        #    if type(el) == QRadioButton:
+        #        el.toggled.connect(self.on_windowing_selection_changed)
+        self.rB_use_windowing.toggled.connect(self.on_windowing_selection_changed)
+
         # play / pause icons
         self.icon_play = self.get_icon('play')
         self.icon_pause = self.get_icon('pause')
@@ -251,6 +256,20 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.on_speed_changed()
 
 
+    def on_windowing_selection_changed(self):
+        if self.rB_use_windowing.isChecked():
+            self.gV_fwd_proj.use_windowing = True
+            self.gV_back_proj.use_windowing = True
+        else:
+            self.gV_fwd_proj.use_windowing = False
+            self.gV_back_proj.use_windowing = False
+            if self.fwd_proj_completed:
+                self.gV_fwd_proj.window_min, self.gV_fwd_proj.window_max = self.fwd_proj_filtered.min(), self.fwd_proj_filtered.max()
+                self.gV_fwd_proj.update()
+            if self.back_proj_completed:
+                self.gV_back_proj.window_min, self.gV_back_proj.window_max = self.back_proj.min(), self.back_proj.max()
+                self.gV_back_proj.update()
+
     def read_config_xml(self, filename):
         if os.path.isfile(filename):
             self.config.read(filename)
@@ -285,8 +304,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             #fluoro = scale_mat_from_to(self.fluoro_thread.get_fwd_proj()) # scale to 0 to 255
             #self.display_image(self.gV_fwd_proj, fluoro)
             fluoro = self.fluoro_thread.get_fwd_proj()
-            self.gV_fwd_proj.window_min, self.gV_fwd_proj.window_max = fluoro.min(), fluoro.max()
-            self.display_image(self.gV_fwd_proj, fluoro)
+            self.gV_fwd_proj.set_image(fluoro, scale_full_range=True)
+            #self.display_image(self.gV_fwd_proj, fluoro)
         for button in [self.pB_fluoro, self.pB_fwd_proj, self.pB_back_proj]:
             button.setDisabled(False)
         self.statusBar.clearMessage()
@@ -759,8 +778,9 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.scroll_fwd_proj.setMaximum(self.current_fwd_proj_idx)
             self.scroll_fwd_proj.setValue(self.current_fwd_proj_idx)
             #self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[self.current_fwd_proj_idx])
-            self.gV_fwd_proj.window_min, self.gV_fwd_proj.window_max = current_proj.min(), current_proj.max()
-            self.display_image(self.gV_fwd_proj, self.fwd_proj[self.current_fwd_proj_idx])
+            #self.gV_fwd_proj.window_min, self.gV_fwd_proj.window_max = current_proj.min(), current_proj.max()
+            #self.display_image(self.gV_fwd_proj, self.fwd_proj[self.current_fwd_proj_idx])
+            self.gV_fwd_proj.set_image(self.fwd_proj[self.current_fwd_proj_idx], scale_full_range=(True if self.current_fwd_proj_idx == 0 else not self.rB_use_windowing.isChecked()))
             if self.current_fwd_proj_idx < self.num_proj_mats - 1: # if not all projections done
                 self.current_fwd_proj_idx += 1
                 self.fwd_proj_thread.proj_idx = self.current_fwd_proj_idx
@@ -770,13 +790,15 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.statusBar.clearMessage()
                 self.filter_fwd_proj()
         else:
-            self.fwd_proj = current_proj
+            self.fwd_proj = current_proj + (abs(current_proj.min()) if current_proj.min() < 0 else 0)
             self.fwd_proj_uint8 = scale_mat_from_to(current_proj)
             self.scroll_fwd_proj.setMaximum(self.fwd_proj.shape[0] - 1)
             self.scroll_fwd_proj.setValue(0)
             #self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[0])
+            self.gV_fwd_proj.image_min, self.gV_fwd_proj.image_max = self.fwd_proj.min(), self.fwd_proj.max()
             self.gV_fwd_proj.window_min, self.gV_fwd_proj.window_max = self.fwd_proj.min(), self.fwd_proj.max()
-            self.display_image(self.gV_fwd_proj, self.fwd_proj[0])
+            self.gV_fwd_proj.set_image(self.fwd_proj[0], shift=0)
+            #self.display_image(self.gV_fwd_proj, self.fwd_proj[0])
             self.statusBar.clearMessage()
             self.filter_fwd_proj()
 
@@ -838,6 +860,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.statusBar.clearMessage()
                 return
             self.fwd_proj_filtered_cosine_ramlak = self.filter_thread_cosine_ramlak.get_fwd_proj_filtered()
+            if self.fwd_proj_filtered_cosine_ramlak.min() < 0:
+                self.fwd_proj_filtered_cosine_ramlak += abs(self.fwd_proj_filtered_cosine_ramlak.min())
             self.fwd_proj_filtered_cosine_ramlak_uint8 = scale_mat_from_to(self.fwd_proj_filtered_cosine_ramlak)
             self.filter_cosine_ramlak_done = True
         elif cosine and not ramlak:
@@ -856,6 +880,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.statusBar.clearMessage()
                 return
             self.fwd_proj_filtered_cosine = self.filter_thread_cosine.get_fwd_proj_filtered()
+            if self.fwd_proj_filtered_cosine.min() < 0:
+                self.fwd_proj_filtered_cosine += abs(self.fwd_proj_filtered_cosine.min())
             self.fwd_proj_filtered_cosine_uint8 = scale_mat_from_to(self.fwd_proj_filtered_cosine)
             self.filter_cosine_done = True
         elif not cosine and ramlak:
@@ -874,6 +900,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.statusBar.clearMessage()
                 return
             self.fwd_proj_filtered_ramlak = self.filter_thread_ramlak.get_fwd_proj_filtered()
+            if self.fwd_proj_filtered_ramlak.min() < 0:
+                self.fwd_proj_filtered_ramlak += abs(self.fwd_proj_filtered_ramlak.min())
             self.fwd_proj_filtered_ramlak_uint8 = scale_mat_from_to(self.fwd_proj_filtered_ramlak)
             self.filter_ramlak_done = True
         else:
@@ -905,8 +933,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         else:
             self.fwd_proj_filtered = self.fwd_proj
             self.fwd_proj_filtered_uint8 = scale_mat_from_to(self.fwd_proj)
+        self.gV_fwd_proj.image_min, self.gV_fwd_proj.image_max = self.fwd_proj_filtered[self.scroll_fwd_proj.value()].min(), self.fwd_proj_filtered[self.scroll_fwd_proj.value()].max()
         self.gV_fwd_proj.window_min, self.gV_fwd_proj.window_max = self.fwd_proj_filtered[self.scroll_fwd_proj.value()].min(), self.fwd_proj_filtered[self.scroll_fwd_proj.value()].max()
-        self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered[self.scroll_fwd_proj.value()])
+        #self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered[self.scroll_fwd_proj.value()])
+        self.gV_fwd_proj.set_image(self.fwd_proj_filtered[self.scroll_fwd_proj.value()], shift=0)
 
     def on_pB_back_proj(self):
         """Initialises the back projection."""
@@ -991,14 +1021,19 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         if self.back_proj_slice_by_slice:
             self.back_proj = np.add(self.back_proj, current_reco)
         else:
-            self.back_proj = current_reco
+            self.back_proj = current_reco + (abs(current_reco.min() if current_reco.min() < 0 else 0))
         self.back_proj_uint8 = scale_mat_from_to(self.back_proj)
         self.back_proj_loaded = True
         if self.back_proj_slice_by_slice:
             # TODO: show correct plane --> can only show axial slice because of the reconstruction iteration
             #self.display_image(self.gV_back_proj, self.back_proj_uint8[self.current_back_proj_slice_idx])
-            self.gV_back_proj.window_min, self.gV_back_proj.window_max = self.back_proj.min(), self.back_proj.max()
-            self.display_image(self.gV_back_proj, self.back_proj[self.current_back_proj_slice_idx])
+            #self.gV_back_proj.window_min, self.gV_back_proj.window_max = self.back_proj.min(), self.back_proj.max()
+            #self.display_image(self.gV_back_proj, self.back_proj[self.current_back_proj_slice_idx])
+            if self.current_back_proj_idx == 0 and self.current_back_proj_slice_idx == 0:
+                scale = True
+            else:
+                scale = not self.rB_use_windowing.isChecked()
+            self.gV_back_proj.set_image(self.back_proj[self.current_back_proj_slice_idx], scale_full_range=scale)
             if self.current_back_proj_idx < self.num_proj_mats - 1:
                 self.current_back_proj_idx += 1
             else:
@@ -1011,6 +1046,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.back_project()
             else:
                 #self.generate_viewing_planes()
+                self.back_proj += abs(self.back_proj.min() if self.back_proj.min() < 0 else 0)
                 self.on_plane_sel_changed()
                 self.back_proj_completed = True
                 for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
@@ -1052,8 +1088,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         #self.back_proj_disp = self.back_proj_uint8
         #self.display_image(self.gV_back_proj, self.back_proj_disp[0])
         #self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=0))
+        self.gV_back_proj.image_min, self.gV_back_proj.image_max = self.back_proj.min(), self.back_proj.max()
         self.gV_back_proj.window_min, self.gV_back_proj.window_max = self.back_proj.min(), self.back_proj.max()
-        self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=0))
+        #self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=0))
+        self.gV_back_proj.set_image(self.get_image_for_current_view(slice=0), shift=0)
         self.scroll_back_proj.setValue(0)
         self.scroll_back_proj.setMaximum(frame_max)
         self.timeline_back_proj.setFrameRange(0, frame_max)
@@ -1142,9 +1180,11 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         frame_num = self.scroll_fwd_proj.value()
         #self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered_uint8[frame_num])
         if self.fwd_proj_completed:
-            self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered[frame_num])
+            #self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered[frame_num])
+            self.gV_fwd_proj.set_image(self.fwd_proj_filtered[frame_num], shift=0)
         else:
-            self.display_image(self.gV_fwd_proj, self.fwd_proj[frame_num])
+            #self.display_image(self.gV_fwd_proj, self.fwd_proj[frame_num])
+            self.gV_fwd_proj.set_image(self.fwd_proj[frame_num], shift=0)
         use_conrad_proj_mat = False
         if use_conrad_proj_mat: # load projection matrices from conrad
             conrad_proj_mats = self.conrad_config.getGeometry().getProjectionMatrices()
@@ -1159,7 +1199,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
     def on_scroll_back_proj(self):
         """Updates the back projection images in the graphicsview when the slider is changed."""
         if  self.back_proj_loaded:
-            self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=self.scroll_back_proj.value()))
+            #self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=self.scroll_back_proj.value()))
+            self.gV_back_proj.set_image(self.get_image_for_current_view(slice=self.scroll_back_proj.value()), shift=0)
 
     def get_image_for_current_view(self, slice):
         """
@@ -1170,7 +1211,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             # top: anterior, bottom: posterior
             # left: right, right: left
             #return np.rot90(self.back_proj_uint8[self.back_proj_uint8.shape[0] - 1 - slice, :, :], k=-1)
-            return np.rot90(self.back_proj[self.back_proj_uint8.shape[0] - 1 - slice, :, :], k=-1)
+            return np.rot90(self.back_proj[self.back_proj.shape[0] - 1 - slice, :, :], k=-1)
         elif self.plane_mode == self.plane_modes.Sagittal:
             # sagittal view from left to right
             # top: super / cranial, bottom: inferior / caudal
@@ -1192,17 +1233,20 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         if self.back_proj_loaded:
             self.scroll_back_proj.setValue(self.timeline_back_proj.currentFrame())
 
-    def display_image(self, graphics_view, image):
+    def display_image(self, graphics_view, image, scale_to_8bit=False):
         """Displays the specified image in the specified graphicsview and fits the content to the view."""
         #graphics_scene = QGraphicsScene()
         #graphics_scene.addItem(pixmap_item)
         #graphics_view.setScene(graphics_scene)
-        graphics_view.set_image(image, update=True)
-        pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(np.copy(image))))
-        if graphics_view == self.gV_fwd_proj:
-            self.pixmap_fwd_proj = pixmap_item
-        elif graphics_view == self.gV_back_proj:
-            self.pixmap_back_proj = pixmap_item
+        if self.rB_use_windowing.isChecked():
+            graphics_view.set_image(image, update=True)
+        else:
+            graphics_view.set_image_as_pixmap(image, scale_to_8bit)
+        #pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(np.copy(image))))
+        #if graphics_view == self.gV_fwd_proj:
+        #    self.pixmap_fwd_proj = pixmap_item
+        #elif graphics_view == self.gV_back_proj:
+        #    self.pixmap_back_proj = pixmap_item
         self.resizeEvent()
 
     def open_3D_Data(self): # TODO
@@ -1269,8 +1313,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.show_back_proj(s)
 
     def resizeEvent(self):
-        self.gV_fwd_proj.fitInView(self.pixmap_fwd_proj.boundingRect(), Qt.KeepAspectRatio)
-        self.gV_back_proj.fitInView(self.pixmap_back_proj.boundingRect(), Qt.KeepAspectRatio)
+        self.gV_fwd_proj.resizeEvent()
+        self.gV_back_proj.resizeEvent()
+        #self.gV_fwd_proj.fitInView(self.pixmap_fwd_proj.boundingRect(), Qt.KeepAspectRatio)
+        #self.gV_back_proj.fitInView(self.pixmap_back_proj.boundingRect(), Qt.KeepAspectRatio)
 
 
 class Window(QMainWindow):
