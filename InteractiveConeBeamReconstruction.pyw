@@ -16,12 +16,13 @@ from VoxelizeWindow import VoxelizeMainWindow, VoxelizeWindow
 from include.vtkWindow import vtkWindow
 from include.help_functions import scale_mat_from_to, rot_mat_to_euler, dicom_to_numpy
 from include.Config_XML import Config_XML
-from Math.projection import create_default_projection_matrix, get_rotation_matrix_by_axis_and_angle
+from Math.projection import create_default_projection_matrix, get_rotation_matrix_by_axis_and_angle, get_source_position
 from Math.vtk_proj_matrix import vtk_proj_matrix
+from GraphicsView import GraphicsView
 
 import jpype
 import pyconrad
-pyconrad.setup_pyconrad(min_ram='2G')
+pyconrad.setup_pyconrad(min_ram='4G')
 
 from threads.forward_projection_thread import forwardProjectionThread
 from threads.backward_projection_thread import backwardProjectionThread
@@ -236,6 +237,19 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.MainWindow.showMaximized()
         self.resizeEvent()
 
+        if False:
+            self.fwd_proj_uint8 = np.load('fwd.npz')
+            self.fwd_proj_filtered_uint8 = self.fwd_proj_uint8[self.fwd_proj_uint8.files[0]]
+            self.scroll_fwd_proj.setMaximum(self.fwd_proj_filtered_uint8.shape[0]-1)
+            self.back_proj_uint8 = np.load('back.npz')
+            self.back_proj_uint8 = self.back_proj_uint8[self.back_proj_uint8.files[0]]
+            self.fwd_proj_loaded = True
+            self.fwd_proj_completed = True
+            self.back_proj_loaded = True
+            self.back_proj_completed = True
+            self.on_plane_sel_changed()
+            self.on_speed_changed()
+
 
     def read_config_xml(self, filename):
         if os.path.isfile(filename):
@@ -268,7 +282,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 icon=self.get_icon('warning')
             )
         else:
-            fluoro = scale_mat_from_to(self.fluoro_thread.get_fwd_proj()) # scale to 0 to 255
+            #fluoro = scale_mat_from_to(self.fluoro_thread.get_fwd_proj()) # scale to 0 to 255
+            #self.display_image(self.gV_fwd_proj, fluoro)
+            fluoro = self.fluoro_thread.get_fwd_proj()
+            self.gV_fwd_proj.window_min, self.gV_fwd_proj.window_max = fluoro.min(), fluoro.max()
             self.display_image(self.gV_fwd_proj, fluoro)
         for button in [self.pB_fluoro, self.pB_fwd_proj, self.pB_back_proj]:
             button.setDisabled(False)
@@ -477,6 +494,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 sid=sdd, sisod=sid,
                 offset_u=off_u, offset_v=off_v
             )
+            test = get_source_position(pmat)
         self.proj_mat_actor = vtk_proj_matrix(pmat, sdd, off_u * 2, off_v * 2)
         self.proj_mat_actor.GetProperty().SetColor(1, 0, 0)
         self.proj_mat_actor.GetProperty().SetLineWidth(5)
@@ -711,13 +729,22 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         Displays the (current) forward projection and starts the next projection or starts the filtering when the projection is done.
         """
         if len(self.fwd_proj_thread.error):
-            msg = 'Could not perform forward projection. Volume dimensions possibly incorrect. Try clicking in "Set to phantom size".'
+            msg = 'Could not perform forward projection.'
+            if self.fwd_proj_thread.error['message'] is not None and ('memory' in self.fwd_proj_thread.error['message'] or 'Memory' in self.fwd_proj_thread.error['message']):
+                msg += ' Volume dimensions possibly incorrect. Try clicking in "Set to phantom size".'
             if self.current_language == 'de_DE':
-                msg = 'Vorwärtsprojektion konnte nicht durchgeführt werden. Möglicherweiße ist die Größe des Volumens falsch gesetzt. Klicke auf "Phantomgröße setzen".'
+                msg = 'Vorwärtsprojektion konnte nicht durchgeführt werden.'
+                if self.fwd_proj_thread.error['message'] is not None and ('memory' in self.fwd_proj_thread.error['message'] or 'Memory' in self.fwd_proj_thread.error['message']):
+                    msg += ' Möglicherweiße ist die Größe des Volumens falsch gesetzt. Klicke auf "Phantomgröße setzen".'
+            details = ''
+            if self.fwd_proj_thread.error['message'] is not None:
+                details += self.fwd_proj_thread['message']
+            if self.fwd_proj_thread.error['stacktrace'] is not None:
+                details += '\n\n'+self.fwd_proj_thread.error['stacktrace']
             self.msg_window(
                 windowTitle='Error',
                 text=msg,
-                detailedText=self.fwd_proj_thread.error['message']+'\n\n'+self.fwd_proj_thread.error['stacktrace'],
+                detailedText=details,
                 icon=self.get_icon('warning')
             )
             for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
@@ -731,7 +758,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.fwd_proj_uint8[self.current_fwd_proj_idx] = scale_mat_from_to(current_proj) # TODO: scaling every projection individually yields different result than scaling all projctions
             self.scroll_fwd_proj.setMaximum(self.current_fwd_proj_idx)
             self.scroll_fwd_proj.setValue(self.current_fwd_proj_idx)
-            self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[self.current_fwd_proj_idx])
+            #self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[self.current_fwd_proj_idx])
+            self.display_image(self.gV_fwd_proj, self.fwd_proj[self.current_fwd_proj_idx])
             if self.current_fwd_proj_idx < self.num_proj_mats - 1: # if not all projections done
                 self.current_fwd_proj_idx += 1
                 self.fwd_proj_thread.proj_idx = self.current_fwd_proj_idx
@@ -745,9 +773,12 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.fwd_proj_uint8 = scale_mat_from_to(current_proj)
             self.scroll_fwd_proj.setMaximum(self.fwd_proj.shape[0] - 1)
             self.scroll_fwd_proj.setValue(0)
-            self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[0])
+            #self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[0])
+            self.display_image(self.gV_fwd_proj, self.fwd_proj[0])
             self.statusBar.clearMessage()
             self.filter_fwd_proj()
+
+            #np.savez('fwd.npz', self.fwd_proj_uint8)
 
     def filter_fwd_proj(self):
         """Starts the threads for filtering the forward projection."""
@@ -789,10 +820,15 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 msg = 'Could not filter projections.'
                 if self.current_language == 'de_DE':
                     msg = 'Projektionen konnten nicht gefiltert werden.'
+                details = ''
+                if self.filter_thread_cosine_ramlak.error['message']is not None:
+                    details += self.filter_thread_cosine_ramlak.error['message']
+                if self.filter_thread_cosine_ramlak.error['stacktrace'] is not None:
+                    details += '\n\n' + self.filter_thread_cosine_ramlak.error['stacktrace']
                 self.msg_window(
                     windowTitle='Error',
                     text=msg,
-                    detailedText=self.filter_thread_cosine_ramlak.error['message'] + '\n\n' + self.filter_thread_cosine_ramlak.error['stacktrace'],
+                    detailedText=details,
                     icon=self.get_icon('warning')
                 )
                 for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
@@ -933,10 +969,15 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             msg = 'Could not perform back projection.'
             if self.current_language == 'de_DE':
                 msg = 'Rückprojektion konnte nicht durchgeführt werden'
+            details = ''
+            if self.back_proj_thread.error['message'] is not None:
+                details += self.back_proj_thread.error['message']
+            if self.back_proj_thread.error['stacktrace'] is not None:
+                details += '\n\n'+self.back_proj_thread.error['stacktrace']
             self.msg_window(
                 windowTitle='Error',
                 text=msg,
-                detailedText=self.back_proj_thread.error['message']+'\n\n'+self.back_proj_thread.error['stacktrace'],
+                detailedText=details,
                 icon=self.get_icon('warning')
             )
             for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
@@ -945,14 +986,15 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             return
         current_reco = self.back_proj_thread.get_back_proj()
         if self.back_proj_slice_by_slice:
-            self.back_proj = np.add(self.back_proj, current_reco) # TODO: check conrad function
+            self.back_proj = np.add(self.back_proj, current_reco)
         else:
             self.back_proj = current_reco
         self.back_proj_uint8 = scale_mat_from_to(self.back_proj)
         self.back_proj_loaded = True
         if self.back_proj_slice_by_slice:
             # TODO: show correct plane --> can only show axial slice because of the reconstruction iteration
-            self.display_image(self.gV_back_proj, self.back_proj_uint8[self.current_back_proj_slice_idx])
+            #self.display_image(self.gV_back_proj, self.back_proj_uint8[self.current_back_proj_slice_idx])
+            self.display_image(self.gV_back_proj, self.back_proj[self.current_back_proj_slice_idx])
             if self.current_back_proj_idx < self.num_proj_mats - 1:
                 self.current_back_proj_idx += 1
             else:
@@ -977,6 +1019,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
                 button.setDisabled(False)
             self.statusBar.clearMessage()
+            #np.savez('back.npz', self.back_proj_uint8)
 
     def generate_viewing_planes(self):
         """Rotates the reconstructed volume to show axial, sagittal and coronal planes."""
@@ -1004,6 +1047,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         frame_max = self.get_back_proj_frame_max()
         #self.back_proj_disp = self.back_proj_uint8
         #self.display_image(self.gV_back_proj, self.back_proj_disp[0])
+        #self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=0))
         self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=0))
         self.scroll_back_proj.setValue(0)
         self.scroll_back_proj.setMaximum(frame_max)
@@ -1019,7 +1063,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             return self.back_proj_uint8.shape[1] - 1
         elif self.plane_mode == self.plane_modes.Coronal:
             return self.back_proj_uint8.shape[2] - 1
-        print(self.plane_mode)
 
     def on_speed_changed(self, back_proj_frame_max=None):
         """Updates the timeline durations for the slide shows."""
@@ -1092,7 +1135,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         if not self.fwd_proj_loaded:
             return
         frame_num = self.scroll_fwd_proj.value()
-        self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered_uint8[frame_num])
+        #self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered_uint8[frame_num])
+        self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered[frame_num])
         use_conrad_proj_mat = False
         if use_conrad_proj_mat: # load projection matrices from conrad
             conrad_proj_mats = self.conrad_config.getGeometry().getProjectionMatrices()
@@ -1117,17 +1161,20 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             # axial view from top to bottom --> access volume from end (-1) to start (0)
             # top: anterior, bottom: posterior
             # left: right, right: left
-            return np.rot90(self.back_proj_uint8[self.back_proj_uint8.shape[0] - 1 - slice, :, :], k=-1)
+            #return np.rot90(self.back_proj_uint8[self.back_proj_uint8.shape[0] - 1 - slice, :, :], k=-1)
+            return np.rot90(self.back_proj[self.back_proj_uint8.shape[0] - 1 - slice, :, :], k=-1)
         elif self.plane_mode == self.plane_modes.Sagittal:
             # sagittal view from left to right
             # top: super / cranial, bottom: inferior / caudal
             # left: anterior, right: posterior
-            return self.back_proj_uint8[:, slice, :]
+            #return self.back_proj_uint8[:, slice, :]
+            return self.back_proj[:, slice, :]
         elif self.plane_mode == self.plane_modes.Coronal:
             # coronal view from back to front --> access volume from end (-1) to start (0)
             # top: superior, bottom: inferior
             # left: right, right: left --> fliplr
-            return np.fliplr(self.back_proj_uint8[:, :, self.back_proj_uint8.shape[2] - 1 - slice])
+            #return np.fliplr(self.back_proj_uint8[:, :, self.back_proj_uint8.shape[2] - 1 - slice])
+            return np.fliplr(self.back_proj[:, :, self.back_proj.shape[2] - 1 - slice])
 
     def display_image_fwd_proj(self):
         if self.fwd_proj_loaded:
@@ -1139,14 +1186,15 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def display_image(self, graphics_view, image):
         """Displays the specified image in the specified graphicsview and fits the content to the view."""
+        #graphics_scene = QGraphicsScene()
+        #graphics_scene.addItem(pixmap_item)
+        #graphics_view.setScene(graphics_scene)
+        graphics_view.set_image(image, update=True)
         pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(image)))
         if graphics_view == self.gV_fwd_proj:
             self.pixmap_fwd_proj = pixmap_item
         elif graphics_view == self.gV_back_proj:
             self.pixmap_back_proj = pixmap_item
-        graphics_scene = QGraphicsScene()
-        graphics_scene.addItem(pixmap_item)
-        graphics_view.setScene(graphics_scene)
         self.resizeEvent()
 
     def open_3D_Data(self): # TODO

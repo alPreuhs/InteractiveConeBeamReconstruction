@@ -20,12 +20,17 @@ class GraphicsView(QGraphicsView):
         self.set_HU_range(-1000, 3096)
 
     def set_image(self, image, update=True):
-        self.image = image
+        self.image = np.copy(image)
+        image_min = self.image.min()
+        if image_min < 0:
+            self.image += image_min
+        self.image_range = self.image.max() - image_min
         if update:
             self.update()
 
     def update(self):
-        image = np.interp(self.image, (self.HU_min, self.HU_max), (self.window_min, self.window_max)).astype(np.uint8)
+        image = np.copy(self.image)
+        image = np.interp(image, (self.window_min, self.window_max), (0, 255)).astype(np.uint8)
         self.pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(image)))
         self.graphics_scene.removeItem(self.graphics_scene.items()[0])
         self.graphics_scene.addItem(self.pixmap_item)
@@ -34,8 +39,8 @@ class GraphicsView(QGraphicsView):
         pos = event.pos()
         x, y = pos.x(), pos.y()
         x_max, y_max = self.width(), self.height()
-        self.window_center = self.HU_max * y / y_max
-        self.window_width = self.HU_range * x / x_max
+        self.window_center = self.image_range * y / y_max
+        self.window_width = 255 * x / x_max
         half_window_width = self.window_center * 0.5
         self.window_min = self.window_center - half_window_width
         self.window_max = self.window_center + half_window_width

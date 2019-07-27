@@ -489,7 +489,7 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.vLayout_fwd_proj = QtWidgets.QVBoxLayout(self.frame_fwd_proj)
         self.vLayout_fwd_proj.setContentsMargins(0, 0, 0, 0)
         self.vLayout_fwd_proj.setObjectName("vLayout_fwd_proj")
-        self.gV_fwd_proj = QtWidgets.QGraphicsView(self.frame_fwd_proj)
+        self.gV_fwd_proj = GraphicsView(self.frame_fwd_proj)
         self.gV_fwd_proj.setStyleSheet("background: black;\n"
 "border: none")
         self.gV_fwd_proj.setObjectName("gV_fwd_proj")
