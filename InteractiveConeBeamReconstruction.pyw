@@ -759,6 +759,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.scroll_fwd_proj.setMaximum(self.current_fwd_proj_idx)
             self.scroll_fwd_proj.setValue(self.current_fwd_proj_idx)
             #self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[self.current_fwd_proj_idx])
+            self.gV_fwd_proj.window_min, self.gV_fwd_proj.window_max = current_proj.min(), current_proj.max()
             self.display_image(self.gV_fwd_proj, self.fwd_proj[self.current_fwd_proj_idx])
             if self.current_fwd_proj_idx < self.num_proj_mats - 1: # if not all projections done
                 self.current_fwd_proj_idx += 1
@@ -774,6 +775,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.scroll_fwd_proj.setMaximum(self.fwd_proj.shape[0] - 1)
             self.scroll_fwd_proj.setValue(0)
             #self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[0])
+            self.gV_fwd_proj.window_min, self.gV_fwd_proj.window_max = self.fwd_proj.min(), self.fwd_proj.max()
             self.display_image(self.gV_fwd_proj, self.fwd_proj[0])
             self.statusBar.clearMessage()
             self.filter_fwd_proj()
@@ -903,7 +905,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         else:
             self.fwd_proj_filtered = self.fwd_proj
             self.fwd_proj_filtered_uint8 = scale_mat_from_to(self.fwd_proj)
-        self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered_uint8[self.scroll_fwd_proj.value()])
+        self.gV_fwd_proj.window_min, self.gV_fwd_proj.window_max = self.fwd_proj_filtered[self.scroll_fwd_proj.value()].min(), self.fwd_proj_filtered[self.scroll_fwd_proj.value()].max()
+        self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered[self.scroll_fwd_proj.value()])
 
     def on_pB_back_proj(self):
         """Initialises the back projection."""
@@ -994,6 +997,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         if self.back_proj_slice_by_slice:
             # TODO: show correct plane --> can only show axial slice because of the reconstruction iteration
             #self.display_image(self.gV_back_proj, self.back_proj_uint8[self.current_back_proj_slice_idx])
+            self.gV_back_proj.window_min, self.gV_back_proj.window_max = self.back_proj.min(), self.back_proj.max()
             self.display_image(self.gV_back_proj, self.back_proj[self.current_back_proj_slice_idx])
             if self.current_back_proj_idx < self.num_proj_mats - 1:
                 self.current_back_proj_idx += 1
@@ -1048,6 +1052,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         #self.back_proj_disp = self.back_proj_uint8
         #self.display_image(self.gV_back_proj, self.back_proj_disp[0])
         #self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=0))
+        self.gV_back_proj.window_min, self.gV_back_proj.window_max = self.back_proj.min(), self.back_proj.max()
         self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=0))
         self.scroll_back_proj.setValue(0)
         self.scroll_back_proj.setMaximum(frame_max)
@@ -1136,7 +1141,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             return
         frame_num = self.scroll_fwd_proj.value()
         #self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered_uint8[frame_num])
-        self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered[frame_num])
+        if self.fwd_proj_completed:
+            self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered[frame_num])
+        else:
+            self.display_image(self.gV_fwd_proj, self.fwd_proj[frame_num])
         use_conrad_proj_mat = False
         if use_conrad_proj_mat: # load projection matrices from conrad
             conrad_proj_mats = self.conrad_config.getGeometry().getProjectionMatrices()
@@ -1190,7 +1198,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         #graphics_scene.addItem(pixmap_item)
         #graphics_view.setScene(graphics_scene)
         graphics_view.set_image(image, update=True)
-        pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(image)))
+        pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(np.copy(image))))
         if graphics_view == self.gV_fwd_proj:
             self.pixmap_fwd_proj = pixmap_item
         elif graphics_view == self.gV_back_proj:
