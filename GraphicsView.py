@@ -17,11 +17,18 @@ class GraphicsView(QGraphicsView):
         self.image_range = 255
         self.window_min, self.window_max = 0, 255
         self.scroll = None
-        self.use_windowing_action = QAction('Use windowing')
-        self.use_windowing_action.setCheckable(True)
-        self.use_windowing_action.toggled.connect(self.on_use_windowing_action)
+        self.make_windowing_optional = False
+        if self.make_windowing_optional:
+            self.use_windowing_action = QAction('Use windowing')
+            self.use_windowing_action.setCheckable(True)
+            self.use_windowing_action.setChecked(True)
+            self.use_windowing_action.toggled.connect(self.on_use_windowing_action)
+        self.reset_window_action = QAction('Reset Window')
+        self.reset_window_action.triggered.connect(self.on_reset_window_action)
         self.context_menu = QMenu()
-        self.context_menu.addAction(self.use_windowing_action)
+        if self.make_windowing_optional:
+            self.context_menu.addAction(self.use_windowing_action)
+        self.context_menu.addAction(self.reset_window_action)
 
     def set_image(self, image, update_values=False):
         self.image = np.copy(image)
@@ -49,7 +56,7 @@ class GraphicsView(QGraphicsView):
         self.graphics_scene.addItem(self.pixmap_item)
 
     def mouseMoveEvent(self, event):
-        if not self.use_windowing_action.isChecked(): return
+        if self.make_windowing_optional and not self.use_windowing_action.isChecked(): return
         window_center = self.image_max * event.pos().y() / self.height()
         half_window_width = 0.5 * self.image_range * event.pos().x() / self.width()
         self.window_min, self.window_max = window_center + half_window_width * np.array([-1, 1])
@@ -67,5 +74,8 @@ class GraphicsView(QGraphicsView):
 
     def on_use_windowing_action(self):
         if not self.use_windowing_action.isChecked():
-            self.update_values_from_image(self.image) # TODO: check
-            self.update()
+            self.on_reset_windowing_action()
+
+    def on_reset_window_action(self):
+        self.update_values_from_image(self.image)  # TODO: check
+        self.update()
