@@ -1137,7 +1137,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         """
         Updates the forward projection image in graphicsview and the projection matrix in the VTK widget when the slider is changed.
         """
-        if not self.fwd_proj_loaded:
+        if not self.fwd_proj_completed:
             return
         frame_num = self.scroll_fwd_proj.value()
         ##self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered_uint8[frame_num])
