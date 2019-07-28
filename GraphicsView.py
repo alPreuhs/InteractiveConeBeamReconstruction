@@ -19,8 +19,9 @@ class GraphicsView(QGraphicsView):
         self.shift = 0
         self.scroll = None
         self.make_windowing_optional = False
+        self.current_language = 'en_GB'
         if self.make_windowing_optional:
-            self.use_windowing_action = QAction('Use windowing')
+            self.use_windowing_action = QAction('Use Windowing')
             self.use_windowing_action.setCheckable(True)
             self.use_windowing_action.setChecked(True)
             self.use_windowing_action.toggled.connect(self.on_use_windowing_action)
@@ -75,3 +76,12 @@ class GraphicsView(QGraphicsView):
     def on_reset_window_action(self):
         self.update_values_from_image(self.image)  # TODO: check
         self.update()
+
+    def change_language(self, lang):
+        self.reset_window_action.setText('Reset Window')
+        if lang == 'de_DE':
+            self.reset_window_action.setText('Fenster zurücksetzen')
+        if self.make_windowing_optional:
+            self.use_windowing_action.setText('Use Windowing')
+            if lang == 'de_DE':
+                self.use_windowing_action.setText('Fenstern verwenden')

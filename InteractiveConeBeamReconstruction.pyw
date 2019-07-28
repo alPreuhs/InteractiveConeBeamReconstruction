@@ -325,6 +325,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.app.installTranslator(self.translator)
         self.retranslateUi(self.MainWindow)
         self.current_language = lang
+        self.gV_fwd_proj.change_language(lang)
+        self.gV_back_proj.change_language(lang)
 
     def msg_window(self, windowTitle='', text='', detailedText='', icon=None):
         """Opens message window with specified text."""
