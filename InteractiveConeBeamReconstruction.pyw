@@ -1090,10 +1090,13 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         """
         Updates the forward projection image in graphicsview and the projection matrix in the VTK widget when the slider is changed.
         """
-        if not self.fwd_proj_completed:
+        if not self.fwd_proj_loaded:
             return
         frame_num = self.scroll_fwd_proj.value()
-        self.gV_fwd_proj.set_image(self.fwd_proj_filtered[frame_num], update_values=False)
+        if self.fwd_proj_completed:
+            self.gV_fwd_proj.set_image(self.fwd_proj_filtered[frame_num], update_values=False)
+        else:
+            self.gV_fwd_proj.set_image(self.fwd_proj[frame_num], update_values=False)
         use_conrad_proj_mat = False
         if use_conrad_proj_mat: # load projection matrices from conrad
             conrad_proj_mats = self.conrad_config.getGeometry().getProjectionMatrices()
