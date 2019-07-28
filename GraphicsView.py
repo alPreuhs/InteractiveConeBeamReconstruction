@@ -34,7 +34,6 @@ class GraphicsView(QGraphicsView):
     def set_image(self, image, update_values=False):
         self.image = np.copy(image)
         if update_values:
-            self.image += abs(self.image.min()) if self.image.min() < 0 else 0
             self.update_values_from_image(self.image)
         self.update()
         self.resizeEvent()

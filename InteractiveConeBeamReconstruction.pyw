@@ -240,19 +240,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.MainWindow.showMaximized()
         self.resizeEvent()
 
-        if False:
-            self.fwd_proj_uint8 = np.load('fwd.npz')
-            self.fwd_proj_filtered_uint8 = self.fwd_proj_uint8[self.fwd_proj_uint8.files[0]]
-            self.scroll_fwd_proj.setMaximum(self.fwd_proj_filtered_uint8.shape[0]-1)
-            self.back_proj_uint8 = np.load('back.npz')
-            self.back_proj_uint8 = self.back_proj_uint8[self.back_proj_uint8.files[0]]
-            self.fwd_proj_loaded = True
-            self.fwd_proj_completed = True
-            self.back_proj_loaded = True
-            self.back_proj_completed = True
-            self.on_plane_sel_changed()
-            self.on_speed_changed()
-
 
     def read_config_xml(self, filename):
         if os.path.isfile(filename):
@@ -690,8 +677,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         det_width = geo.getDetectorWidth()
         spacing = [geo.getVoxelSpacingX(), geo.getVoxelSpacingY(), geo.getVoxelSpacingZ()]
         self.fwd_proj = np.ndarray(shape=(num_projs, det_height, det_width)) # resulting forward projection
-        self.fwd_proj_uint8 = np.ndarray(shape=(num_projs, det_height, det_width), dtype=np.uint8) # scaled to 0 to 255
-        self.fwd_proj_filtered_uint8 = np.ndarray(shape=(num_projs, det_height, det_width), dtype=np.uint8) # filtered
         self.on_speed_changed()
         self.timeline_fwd_proj.setFrameRange(0, num_projs - 1)
         self.scroll_fwd_proj.setMaximum(num_projs - 1)
@@ -755,32 +740,27 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         current_proj = self.fwd_proj_thread.get_fwd_proj()
         if self.fwd_proj_slice_by_slice:
             self.fwd_proj[self.current_fwd_proj_idx] = current_proj
-            self.fwd_proj_uint8[self.current_fwd_proj_idx] = scale_mat_from_to(current_proj) # TODO: scaling every projection individually yields different result than scaling all projctions
             self.scroll_fwd_proj.setMaximum(self.current_fwd_proj_idx)
             self.scroll_fwd_proj.setValue(self.current_fwd_proj_idx)
-            ##self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[self.current_fwd_proj_idx])
             self.gV_fwd_proj.set_image(self.fwd_proj[self.current_fwd_proj_idx], update_values=True)
             if self.current_fwd_proj_idx < self.num_proj_mats - 1: # if not all projections done
                 self.current_fwd_proj_idx += 1
                 self.fwd_proj_thread.proj_idx = self.current_fwd_proj_idx
                 self.fwd_project()
             else: # done
-                self.fwd_proj_uint8 = scale_mat_from_to(self.fwd_proj)
                 self.gV_fwd_proj.update_values_from_image(self.fwd_proj)
                 self.statusBar.clearMessage()
                 self.filter_fwd_proj()
         else:
             self.fwd_proj = current_proj
-            self.fwd_proj_uint8 = scale_mat_from_to(current_proj)
             self.scroll_fwd_proj.setMaximum(self.fwd_proj.shape[0] - 1)
             self.scroll_fwd_proj.setValue(0)
             self.gV_fwd_proj.update_values_from_image(self.fwd_proj)
             self.gV_fwd_proj.set_image(self.fwd_proj[0])
-            ##self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[0])
             self.statusBar.clearMessage()
             self.filter_fwd_proj()
 
-            #np.savez('fwd.npz', self.fwd_proj_uint8)
+            #np.savez('fwd.npz', self.fwd_proj)
 
     def filter_fwd_proj(self):
         """Starts the threads for filtering the forward projection."""
@@ -838,7 +818,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.statusBar.clearMessage()
                 return
             self.fwd_proj_filtered_cosine_ramlak = self.filter_thread_cosine_ramlak.get_fwd_proj_filtered()
-            self.fwd_proj_filtered_cosine_ramlak_uint8 = scale_mat_from_to(self.fwd_proj_filtered_cosine_ramlak)
             self.filter_cosine_ramlak_done = True
         elif cosine and not ramlak:
             if len(self.filter_thread_cosine.error):
@@ -856,7 +835,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.statusBar.clearMessage()
                 return
             self.fwd_proj_filtered_cosine = self.filter_thread_cosine.get_fwd_proj_filtered()
-            self.fwd_proj_filtered_cosine_uint8 = scale_mat_from_to(self.fwd_proj_filtered_cosine)
             self.filter_cosine_done = True
         elif not cosine and ramlak:
             if len(self.filter_thread_ramlak.error):
@@ -874,7 +852,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.statusBar.clearMessage()
                 return
             self.fwd_proj_filtered_ramlak = self.filter_thread_ramlak.get_fwd_proj_filtered()
-            self.fwd_proj_filtered_ramlak_uint8 = scale_mat_from_to(self.fwd_proj_filtered_ramlak)
             self.filter_ramlak_done = True
         else:
             pass  # TODO
@@ -895,17 +872,12 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         ramlak = self.cB_ramlak_filter.isChecked()
         if cosine and ramlak:
             self.fwd_proj_filtered = self.fwd_proj_filtered_cosine_ramlak
-            self.fwd_proj_filtered_uint8 = self.fwd_proj_filtered_cosine_ramlak_uint8
         elif cosine and not ramlak:
             self.fwd_proj_filtered = self.fwd_proj_filtered_cosine
-            self.fwd_proj_filtered_uint8 = self.fwd_proj_filtered_cosine_uint8
         elif not cosine and ramlak:
             self.fwd_proj_filtered = self.fwd_proj_filtered_ramlak
-            self.fwd_proj_filtered_uint8 = self.fwd_proj_filtered_ramlak_uint8
         else:
             self.fwd_proj_filtered = self.fwd_proj
-            self.fwd_proj_filtered_uint8 = scale_mat_from_to(self.fwd_proj)
-        ##self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered_uint8[self.scroll_fwd_proj.value()])
         self.gV_fwd_proj.update_values_from_image(self.fwd_proj_filtered) # update from whole 3D array
         self.gV_fwd_proj.set_image(self.fwd_proj_filtered[self.scroll_fwd_proj.value()])
 
@@ -932,8 +904,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         zmax, ymax, xmax = geo.getReconDimensionZ(), geo.getReconDimensionY(), geo.getReconDimensionX()
         self.scroll_back_proj.setMaximum(zmax - 1)
         self.back_proj = np.zeros(shape=(zmax, ymax, xmax))
-        self.back_proj_uint8 = np.zeros(shape=(zmax, ymax, xmax), dtype=np.uint8)
-        #self.back_proj_disp = np.zeros(shape=(zmax, ymax, xmax), dtype=np.uint8)
         self.on_speed_changed()
         self.timeline_back_proj.setFrameRange(0, self.fwd_proj.shape[0] - 1)
         if self.rB_all.isChecked(): # backproject all at once
@@ -994,11 +964,9 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         else:
             self.back_proj = current_reco
             self.gV_back_proj.update_values_from_image(self.back_proj)
-        self.back_proj_uint8 = scale_mat_from_to(self.back_proj)
         self.back_proj_loaded = True
         if self.back_proj_slice_by_slice:
             # TODO: show correct plane --> can only show axial slice because of the reconstruction iteration
-            ##self.display_image(self.gV_back_proj, self.back_proj_uint8[self.current_back_proj_slice_idx])
             self.gV_back_proj.set_image(self.back_proj, update_values=True)
             if self.current_back_proj_idx < self.num_proj_mats - 1:
                 self.current_back_proj_idx += 1
@@ -1011,7 +979,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                     self.fwd_proj.shape[0] - 1:
                 self.back_project()
             else:
-                #self.generate_viewing_planes()
                 self.gV_back_proj.update_values_from_image(self.back_proj)
                 self.on_plane_sel_changed()
                 self.back_proj_completed = True
@@ -1019,25 +986,13 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                     button.setDisabled(False)
                 self.statusBar.clearMessage()
         else:
-            #self.generate_viewing_planes()
             self.on_plane_sel_changed()
             self.back_proj_completed = True
             for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
                 button.setDisabled(False)
             self.statusBar.clearMessage()
-            #np.savez('back.npz', self.back_proj_uint8)
 
-    def generate_viewing_planes(self):
-        """Rotates the reconstructed volume to show axial, sagittal and coronal planes."""
-        # currently not used
-        # TODO: check if rotations are correct
-        self.back_proj_axial = np.rot90(self.back_proj_uint8, 2, (1, 2))
-        self.back_proj_axial = np.rot90(self.back_proj_axial, 2, (0, 2))
-        self.back_proj_sagittal = np.rot90(self.back_proj_uint8, 1, (1, 2))
-        self.back_proj_sagittal = np.rot90(self.back_proj_sagittal, 1, (0, 1))
-        self.back_proj_sagittal = np.rot90(self.back_proj_sagittal, 2, (1, 2))
-        self.back_proj_coronal = np.rot90(self.back_proj_uint8, 1, (0, 1))
-        self.back_proj_coronal = np.rot90(self.back_proj_coronal, 2, (0, 2))
+            #np.savez('back.npz', self.back_proj)
 
     def on_plane_sel_changed(self):
         """Updates plane view."""
@@ -1051,9 +1006,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         elif currentText == 'Coronal':
             self.plane_mode = self.plane_modes.Coronal
         frame_max = self.get_back_proj_frame_max()
-        #self.back_proj_disp = self.back_proj_uint8
-        #self.display_image(self.gV_back_proj, self.back_proj_disp[0])
-        ##self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=0))
         self.gV_back_proj.set_image(self.get_image_for_current_view(slice=0))
         self.scroll_back_proj.setValue(0)
         self.scroll_back_proj.setMaximum(frame_max)
@@ -1064,11 +1016,11 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         if not self.back_proj_loaded: # if not self.back_proj_completed
             return 0
         if self.plane_mode == self.plane_modes.Axial:
-            return self.back_proj_uint8.shape[0] - 1
+            return self.back_proj.shape[0] - 1
         elif self.plane_mode == self.plane_modes.Sagittal:
-            return self.back_proj_uint8.shape[1] - 1
+            return self.back_proj.shape[1] - 1
         elif self.plane_mode == self.plane_modes.Coronal:
-            return self.back_proj_uint8.shape[2] - 1
+            return self.back_proj.shape[2] - 1
 
     def on_speed_changed(self, back_proj_frame_max=None):
         """Updates the timeline durations for the slide shows."""
@@ -1081,7 +1033,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.timeline_back_proj.stop()
         current_val_back_proj = self.timeline_back_proj.currentValue()
         frame_duration = self.frame_duration_max - ((self.sB_speed.value() - 1) * self.frame_duration_dt)
-        self.timeline_fwd_proj.setDuration(frame_duration * self.fwd_proj_filtered_uint8.shape[0])
+        self.timeline_fwd_proj.setDuration(frame_duration * self.fwd_proj_filtered.shape[0])
         self.timeline_fwd_proj.setUpdateInterval(frame_duration)
         self.timeline_fwd_proj.setCurrentTime(self.timeline_fwd_proj.duration() * current_val_fwd_proj)
         if back_proj_frame_max is None:
@@ -1141,7 +1093,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         if not self.fwd_proj_completed:
             return
         frame_num = self.scroll_fwd_proj.value()
-        ##self.display_image(self.gV_fwd_proj, self.fwd_proj_filtered_uint8[frame_num])
         self.gV_fwd_proj.set_image(self.fwd_proj_filtered[frame_num], update_values=False)
         use_conrad_proj_mat = False
         if use_conrad_proj_mat: # load projection matrices from conrad
@@ -1157,7 +1108,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
     def on_scroll_back_proj(self):
         """Updates the back projection images in the graphicsview when the slider is changed."""
         if self.back_proj_loaded:
-            ##self.display_image(self.gV_back_proj, self.get_image_for_current_view(slice=self.scroll_back_proj.value()))
             self.gV_back_proj.set_image(self.get_image_for_current_view(slice=self.scroll_back_proj.value()), update_values=False)
 
     def get_image_for_current_view(self, slice):
@@ -1168,19 +1118,16 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             # axial view from top to bottom --> access volume from end (-1) to start (0)
             # top: anterior, bottom: posterior
             # left: right, right: left
-            ##return np.rot90(self.back_proj_uint8[self.back_proj_uint8.shape[0] - 1 - slice, :, :], k=-1)
             return np.rot90(self.back_proj[self.back_proj.shape[0] - 1 - slice, :, :], k=-1)
         elif self.plane_mode == self.plane_modes.Sagittal:
             # sagittal view from left to right
             # top: super / cranial, bottom: inferior / caudal
             # left: anterior, right: posterior
-            ##return self.back_proj_uint8[:, slice, :]
             return self.back_proj[:, slice, :]
         elif self.plane_mode == self.plane_modes.Coronal:
             # coronal view from back to front --> access volume from end (-1) to start (0)
             # top: superior, bottom: inferior
             # left: right, right: left --> fliplr
-            ##return np.fliplr(self.back_proj_uint8[:, :, self.back_proj_uint8.shape[2] - 1 - slice])
             return np.fliplr(self.back_proj[:, :, self.back_proj.shape[2] - 1 - slice])
 
     def display_image_fwd_proj(self):
@@ -1190,19 +1137,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
     def display_image_back_proj(self):
         if self.back_proj_loaded:
             self.scroll_back_proj.setValue(self.timeline_back_proj.currentFrame())
-
-    def display_image(self, graphics_view, image):
-        """Displays the specified image in the specified graphicsview and fits the content to the view."""
-        return # tmp
-        pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(image)))
-        if graphics_view == self.gV_fwd_proj:
-            self.pixmap_fwd_proj = pixmap_item
-        elif graphics_view == self.gV_back_proj:
-            self.pixmap_back_proj = pixmap_item
-        graphics_scene = QGraphicsScene()
-        graphics_scene.addItem(pixmap_item)
-        graphics_view.setScene(graphics_scene)
-        self.resizeEvent()
 
     def open_3D_Data(self): # TODO
         inf = 'Open file'
