@@ -16,6 +16,7 @@ class GraphicsView(QGraphicsView):
         self.image_max = 255
         self.image_range = 255
         self.window_min, self.window_max = 0, 255
+        self.shift = 0
         self.scroll = None
         self.make_windowing_optional = False
         if self.make_windowing_optional:
@@ -38,19 +39,15 @@ class GraphicsView(QGraphicsView):
         self.update()
         self.resizeEvent()
 
-    def shift_image(self, image, update_values=True):
-        image_out = image + (abs(image.min()) if image.min() < 0 else 0)
-        if update_values:
-            self.update_values_from_image(image_out)
-        return image_out
-
     def update_values_from_image(self, image):
-        self.image_max = image.max()
-        self.image_range = self.image_max - image.min()
-        self.window_min, self.window_max = image.min(), self.image_max
+        if image.min() < 0:
+            self.shift = abs(image.min())
+        self.image_max = image.max() + self.shift
+        self.image_range = image.max() - image.min() + self.shift
+        self.window_min, self.window_max = image.min() + self.shift, image.max() + self.shift
 
     def update(self):
-        image = np.interp(np.copy(self.image), (self.window_min, self.window_max), (0, 255)).astype(np.uint8)
+        image = np.interp(np.copy(self.image + self.shift), (self.window_min, self.window_max), (0, 255)).astype(np.uint8)
         self.graphics_scene.removeItem(self.graphics_scene.items()[0])
         self.pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(image)))
         self.graphics_scene.addItem(self.pixmap_item)

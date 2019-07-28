@@ -766,7 +766,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.fwd_project()
             else: # done
                 self.fwd_proj_uint8 = scale_mat_from_to(self.fwd_proj)
-                self.fwd_proj = self.gV_fwd_proj.shift_image(self.fwd_proj, update_values=True)
+                self.gV_fwd_proj.update_values_from_image(self.fwd_proj)
                 self.statusBar.clearMessage()
                 self.filter_fwd_proj()
         else:
@@ -774,7 +774,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.fwd_proj_uint8 = scale_mat_from_to(current_proj)
             self.scroll_fwd_proj.setMaximum(self.fwd_proj.shape[0] - 1)
             self.scroll_fwd_proj.setValue(0)
-            self.fwd_proj = self.gV_fwd_proj.shift_image(self.fwd_proj, update_values=True)
+            self.gV_fwd_proj.update_values_from_image(self.fwd_proj)
             self.gV_fwd_proj.set_image(self.fwd_proj[0])
             ##self.display_image(self.gV_fwd_proj, self.fwd_proj_uint8[0])
             self.statusBar.clearMessage()
@@ -837,7 +837,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                     button.setDisabled(False)
                 self.statusBar.clearMessage()
                 return
-            self.fwd_proj_filtered_cosine_ramlak = self.gV_fwd_proj.shift_image(self.filter_thread_cosine_ramlak.get_fwd_proj_filtered(), update_values=False)
+            self.fwd_proj_filtered_cosine_ramlak = self.filter_thread_cosine_ramlak.get_fwd_proj_filtered()
             self.fwd_proj_filtered_cosine_ramlak_uint8 = scale_mat_from_to(self.fwd_proj_filtered_cosine_ramlak)
             self.filter_cosine_ramlak_done = True
         elif cosine and not ramlak:
@@ -855,7 +855,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                     button.setDisabled(False)
                 self.statusBar.clearMessage()
                 return
-            self.fwd_proj_filtered_cosine = self.gV_fwd_proj.shift_image(self.filter_thread_cosine.get_fwd_proj_filtered(), update_values=False)
+            self.fwd_proj_filtered_cosine = self.filter_thread_cosine.get_fwd_proj_filtered()
             self.fwd_proj_filtered_cosine_uint8 = scale_mat_from_to(self.fwd_proj_filtered_cosine)
             self.filter_cosine_done = True
         elif not cosine and ramlak:
@@ -873,7 +873,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                     button.setDisabled(False)
                 self.statusBar.clearMessage()
                 return
-            self.fwd_proj_filtered_ramlak = self.gV_fwd_proj.shift_image(self.filter_thread_ramlak.get_fwd_proj_filtered(), update_values=False)
+            self.fwd_proj_filtered_ramlak = self.filter_thread_ramlak.get_fwd_proj_filtered()
             self.fwd_proj_filtered_ramlak_uint8 = scale_mat_from_to(self.fwd_proj_filtered_ramlak)
             self.filter_ramlak_done = True
         else:
@@ -992,7 +992,8 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         if self.back_proj_slice_by_slice:
             self.back_proj = np.add(self.back_proj, current_reco)
         else:
-            self.back_proj = self.gV_back_proj.shift_image(current_reco, update_values=True)
+            self.back_proj = current_reco
+            self.gV_back_proj.update_values_from_image(self.back_proj)
         self.back_proj_uint8 = scale_mat_from_to(self.back_proj)
         self.back_proj_loaded = True
         if self.back_proj_slice_by_slice:
@@ -1011,7 +1012,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.back_project()
             else:
                 #self.generate_viewing_planes()
-                self.back_proj = self.gV_back_proj.shift_image(self.back_proj, update_values=True)
+                self.gV_back_proj.update_values_from_image(self.back_proj)
                 self.on_plane_sel_changed()
                 self.back_proj_completed = True
                 for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
