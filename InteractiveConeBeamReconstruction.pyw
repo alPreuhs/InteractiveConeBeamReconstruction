@@ -967,7 +967,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.back_proj_loaded = True
         if self.back_proj_slice_by_slice:
             # TODO: show correct plane --> can only show axial slice because of the reconstruction iteration
-            self.gV_back_proj.set_image(self.back_proj, update_values=True)
+            self.gV_back_proj.set_image(self.back_proj[self.current_back_proj_slice_idx], update_values=True)
             if self.current_back_proj_idx < self.num_proj_mats - 1:
                 self.current_back_proj_idx += 1
             else:
