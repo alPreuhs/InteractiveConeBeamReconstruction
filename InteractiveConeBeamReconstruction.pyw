@@ -21,7 +21,7 @@ from Math.vtk_proj_matrix import vtk_proj_matrix
 
 import jpype
 import pyconrad
-pyconrad.setup_pyconrad(min_ram='2G')
+pyconrad.setup_pyconrad(min_ram='4G')
 
 from threads.forward_projection_thread import forwardProjectionThread
 from threads.backward_projection_thread import backwardProjectionThread
@@ -178,6 +178,9 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         # connect check boxes for filters
         self.cB_ramlak_filter.stateChanged.connect(self.on_filter_cB_changed)
         self.cB_cosine_filter.stateChanged.connect(self.on_filter_cB_changed)
+
+        self.gV_fwd_proj.scroll = self.scroll_fwd_proj
+        self.gV_back_proj.scroll = self.scroll_back_proj
 
         # setup the frame duration for the slide shows
         self.frame_duration_min = 10
