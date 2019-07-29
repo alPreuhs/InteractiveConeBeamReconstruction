@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="de_DE" sourcelanguage="en_GB">
+<!DOCTYPE TS><TS version="2.0" language="de_DE" sourcelanguage="en_GB">
 <context>
     <name>Interactive_Cone_Beam_Reconstruction</name>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="687"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="690"/>
         <source>Interactive Cone Beam Reconstruction</source>
-        <translation type="unfinished">Interaktive Cone-Beam Rekonstruktion</translation>
+        <translation>Interaktive Cone-Beam Rekonstruktion</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="747"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="750"/>
         <source>S
 C
 A
 N</source>
-        <translation type="unfinished">R
+        <translation>R
 Ö
 N
 T
@@ -23,7 +22,7 @@ E
 N</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="757"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="760"/>
         <source>R
 E
 C
@@ -54,209 +53,179 @@ O
 N</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="773"/>
-        <source>Axial</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="774"/>
-        <source>Sagittal</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="775"/>
-        <source>Coronal</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="776"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="779"/>
         <source>File</source>
         <translation>Datei</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="777"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="780"/>
         <source>&amp;Language</source>
         <translation type="unfinished">&amp;Sprache</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="779"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="782"/>
         <source>&amp;Open 3D Data</source>
-        <translation type="unfinished">&amp;3D-Daten öffnen</translation>
+        <translation>&amp;3D-Daten öffnen</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="780"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="783"/>
         <source>Ctrl+O</source>
         <translation>Strg+O</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="781"/>
-        <source>&amp;English</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="782"/>
-        <source>&amp;Deutsch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="771"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="774"/>
         <source>playback speed</source>
         <translation>Wiedergabegeschwindigkeit</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="697"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="700"/>
         <source>Trajectory</source>
         <translation type="unfinished">Trajektorie</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="698"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="701"/>
         <source>Source to detector distance</source>
         <translation type="unfinished">Abstand Quelle zu Detektor</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="734"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="737"/>
         <source> mm</source>
         <translation> mm</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="700"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="703"/>
         <source>Source to patient distance</source>
         <translation type="unfinished">Abstand Quelle zu Patient</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="702"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="705"/>
         <source>Average angular increment</source>
         <translation type="unfinished">Winkelabstand</translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="482"/>
-        <source>°</source>
+        <source>&#xb0;</source>
         <translation type="obsolete">°</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="704"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="707"/>
         <source>No. of sweeps</source>
         <translation type="unfinished">Anzahl Umrundungen</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="705"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="708"/>
         <source>No. of projections</source>
         <translation>Anzahl Projektionen</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="706"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="709"/>
         <source>Detector offset u</source>
         <translation type="unfinished">Detektor-Offset u</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="716"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="719"/>
         <source> px</source>
         <translation> px</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="708"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="711"/>
         <source>Detector offset v</source>
         <translation type="unfinished">Detektor-Offset v</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="710"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="713"/>
         <source>Rotation axis</source>
         <translation>Rotationsachse</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="711"/>
-        <source>[0.0; 0.0; 1.0]</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="712"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="715"/>
         <source>Detector</source>
         <translation>Detektor</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="713"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="716"/>
         <source>Detector size x</source>
         <translation>Detektorgröße x</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="715"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="718"/>
         <source>Detector size y</source>
         <translation>Detektorgröße y</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="717"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="720"/>
         <source>Pixel spacing x</source>
         <translation type="unfinished">Pixelabstand x</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="719"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="722"/>
         <source>Pixel spacing y</source>
         <translation type="unfinished">Pixelabstand y</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="721"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="724"/>
         <source>Volume</source>
-        <translation>Volumen</translation>
+        <translation type="unfinished">Volumen</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="722"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="725"/>
         <source>Size x</source>
-        <translation>Größe x</translation>
+        <translation type="unfinished">Größe x</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="727"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="730"/>
         <source> voxel</source>
         <translation> Voxel</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="724"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="727"/>
         <source>Size y</source>
-        <translation>Größe y</translation>
-    </message>
-    <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="726"/>
-        <source>Size z</source>
-        <translation>Größe z</translation>
+        <translation type="unfinished">Größe y</translation>
     </message>
     <message>
         <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="729"/>
+        <source>Size z</source>
+        <translation type="unfinished">Größe z</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="732"/>
         <source>Spacing x</source>
         <translation type="unfinished">Abstand x</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="731"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="734"/>
         <source>Spacing y</source>
         <translation type="unfinished">Abstand y</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="733"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="736"/>
         <source>Spacing z</source>
         <translation type="unfinished">Abstand z</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="738"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="741"/>
         <source>Show steps</source>
-        <translation type="unfinished">Schritte anzeigen</translation>
+        <translation>Schritte anzeigen</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="739"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="742"/>
         <source>all at once</source>
         <translation type="unfinished">Alle auf einmal</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="740"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="743"/>
         <source>slice by slice</source>
         <translation type="unfinished">Schicht für Schicht</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="741"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="744"/>
         <source>Reset</source>
         <translation>Zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="772"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="775"/>
         <source>x</source>
-        <translation type="unfinished">x</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="564"/>
@@ -269,62 +238,102 @@ N</translation>
         <translation type="obsolete">Konfiguration speichern unter...</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="735"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="738"/>
         <source>Filters</source>
         <translation>Filter</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="736"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="739"/>
         <source>Cosine</source>
-        <translation>Cosinus</translation>
+        <translation type="unfinished">Cosinus</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="737"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="740"/>
         <source>Ramlak</source>
         <translation>Ramlak</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="696"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="699"/>
         <source>Simple</source>
         <translation type="unfinished">Einfach</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="742"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="745"/>
         <source>Use GPU</source>
         <translation type="unfinished">GPU</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="743"/>
-        <source>Advanced</source>
-        <translation type="unfinished">Erweitert</translation>
-    </message>
-    <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="745"/>
-        <source>Demo acquisition</source>
-        <translation type="unfinished">Demo-Aufnahme</translation>
-    </message>
-    <message>
         <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="746"/>
-        <source>Reset view</source>
-        <translation type="unfinished">Ansicht zurücksetzen</translation>
+        <source>Advanced</source>
+        <translation>Erweitert</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="783"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="748"/>
+        <source>Demo acquisition</source>
+        <translation>Demo-Aufnahme</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="749"/>
+        <source>Reset view</source>
+        <translation>Ansicht zurücksetzen</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="786"/>
         <source>&amp;Load Configuration</source>
         <translation>Konfiguration &amp;laden</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="784"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="787"/>
         <source>&amp;Save Configuration as...</source>
         <translation>Konfiguration &amp;speichern unter</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="728"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="731"/>
         <source>Set to phantom size</source>
         <translation type="unfinished">Phantomgröße setzen</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="751"/>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="788"/>
+        <source>Voxelize Mesh</source>
+        <translation type="unfinished">Mesh in Voxel-Volumen umwandeln</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="789"/>
+        <source>Set Phantom array</source>
+        <translation>Phantom laden</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="781"/>
+        <source>View</source>
+        <translation>Ansicht</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="790"/>
+        <source>3D</source>
+        <translation type="unfinished">3D</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="791"/>
+        <source>Projection</source>
+        <translation type="unfinished">Projektion</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="792"/>
+        <source>Backprojection</source>
+        <translation type="unfinished">Rückprojection</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="793"/>
+        <source>Configuration</source>
+        <translation>Konfiguration</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="714"/>
+        <source>[0.0; 0.0; 1.0]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="754"/>
         <source>F
 L
 U
@@ -334,42 +343,37 @@ O</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="785"/>
-        <source>Voxelize Mesh</source>
-        <translation type="unfinished">Mesh in Voxel-Volumen umwandeln</translation>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="776"/>
+        <source>Axial</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="786"/>
-        <source>Set Phantom array</source>
-        <translation type="unfinished">Phantom laden</translation>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="777"/>
+        <source>Sagittal</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="778"/>
-        <source>View</source>
-        <translation type="unfinished">Ansicht</translation>
+        <source>Coronal</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="787"/>
-        <source>3D</source>
-        <translation>3D</translation>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="784"/>
+        <source>&amp;English</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="788"/>
-        <source>Projection</source>
-        <translation type="unfinished">Projektion</translation>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="785"/>
+        <source>&amp;Deutsch</source>
+        <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="789"/>
-        <source>Backprojection</source>
-        <translation type="unfinished">Rückprojection</translation>
+    <message encoding="UTF-8">
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="706"/>
+        <source>°</source>
+        <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="790"/>
-        <source>Configuration</source>
-        <translation type="unfinished">Konfiguration</translation>
-    </message>
-    <message>
-        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="744"/>
+    <message encoding="UTF-8">
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="747"/>
         <source>LAO/RAO: 0°    CRAN/CAUD: 0°</source>
         <translation type="unfinished"></translation>
     </message>
@@ -400,6 +404,121 @@ O</source>
         <location filename="../InteractiveConebeamReconstruction_GUI.py" line="60"/>
         <source>Language</source>
         <translation type="obsolete">Sprache</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="680"/>
+        <source>Performing forward projection</source>
+        <translation type="unfinished">Vorwärtsprojektion</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="252"/>
+        <source>Performing Fluoroscopy</source>
+        <translation type="unfinished">Fluoro</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="261"/>
+        <source>Could not perform fluoro. Volume dimensions possibly incorrect. Try clicking in &quot;Set to phantom size&quot;.</source>
+        <translation>Fluoro konnte nicht durchgeführt werden. Möglicherweiße ist die Größe des Volumens falsch gesetzt. Klicke auf &quot;Phantomgröße setzen&quot;.</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="285"/>
+        <source>Choose phantom file</source>
+        <translation type="unfinished">Datei des Phantoms auswählen</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="487"/>
+        <source>Initialising configuration</source>
+        <translation>Konfiguration wird initialisiert</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="495"/>
+        <source>Open CONRAD configuration</source>
+        <translation>CONRAD-Konfiguration öffnen</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="534"/>
+        <source>Source to detector distance must be larger than source to patient distance.</source>
+        <translation type="unfinished">Abstand Quelle zu Detektor muss größer sein als Abstand Quelle zu Patient.</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="542"/>
+        <source>Save CONRAD configuration as</source>
+        <translation>CONRAD-Konfiguration speichern unter</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="700"/>
+        <source>Could not perform forward projection.</source>
+        <translation>Vorwärtsprojektion konnte nicht durchgeführt werden.</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="702"/>
+        <source> Volume dimensions possibly incorrect. Try clicking in &quot;Set to phantom size&quot;.</source>
+        <translation type="unfinished"> Möglicherweiße ist die Größe des Volumens falsch gesetzt. Klicke auf &quot;Phantomgröße setzen&quot;.</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="771"/>
+        <source>Filtering projections</source>
+        <translation>Projektionen werden gefiltert</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="796"/>
+        <source>Could not filter projections</source>
+        <translation type="obsolete">Projektionen konnten nicht gefiltert werden.</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="860"/>
+        <source>Reconstruction not possible</source>
+        <translation>Rekonstruktion nicht möglich</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="860"/>
+        <source>First perform the forward projection by clicking on &apos;Scan&apos;</source>
+        <translation type="unfinished">Führe erst die Vorwärtsprojektion über den Button &apos;Röntgen&apos; durch</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="887"/>
+        <source>Performing backward projection</source>
+        <translation type="unfinished">Rückprojektion</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="889"/>
+        <source>slice</source>
+        <translation>Schicht</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="889"/>
+        <source>projection</source>
+        <translation>Projektion</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="954"/>
+        <source>Could not perform back projection</source>
+        <translation type="obsolete">Rückprojektion konnte nicht durchgeführt werden.</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="1107"/>
+        <source>Open file</source>
+        <translation>Datei öffnen</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="777"/>
+        <source>Could not filter projections.</source>
+        <translation type="unfinished">Projektionen konnten nicht gefiltert werden.</translation>
+    </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="910"/>
+        <source>Could not perform back projection.</source>
+        <translation type="unfinished">Rückprojektion konnte nicht durchgeführt werden.</translation>
+    </message>
+    <message>
+        <location filename="../GraphicsView.py" line="85"/>
+        <source>Use Windowing</source>
+        <translation type="unfinished">Fenstern verwenden</translation>
+    </message>
+    <message>
+        <location filename="../GraphicsView.py" line="83"/>
+        <source>Reset Window</source>
+        <translation>Fenster zurücksetzen</translation>
     </message>
 </context>
 </TS>

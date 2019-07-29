@@ -5,7 +5,7 @@ import traceback
 import numpy as np
 from enum import Enum
 
-from PyQt5.QtCore import Qt, QTranslator, pyqtSignal, QTimeLine, qFatal
+from PyQt5.QtCore import Qt, QTranslator, pyqtSignal, QTimeLine, qFatal, QCoreApplication
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QMessageBox, QDialog
 from PyQt5.QtGui import QIcon
 from SplashScreen import SplashScreen
@@ -249,9 +249,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         """Performs a single forward projection for the LAO/RAO angle 0°."""
         for button in [self.pB_fluoro, self.pB_fwd_proj, self.pB_back_proj]:
             button.setDisabled(True)
-        msg = 'Performing Fluoroscopy'
-        if self.current_language == 'de_DE':
-            msg = 'Fluoro'
+        msg = QCoreApplication.translate('MainWindow', 'Performing Fluoroscopy')
         self.statusBar.showMessage(msg)
         self.save_configuration(filename=self.conrad_xml)
         self.fluoro_thread.init(phantom=self.phantom, proj_idx=0, use_cl=self.cB_use_cl.isChecked(), parent=self)
@@ -260,9 +258,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
     def on_fluoro_finished(self):
         """Displays the fluoro image when the thread is finished."""
         if len(self.fluoro_thread.error):
-            msg = 'Could not perform fluoro. Volume dimensions possibly incorrect. Try clicking in "Set to phantom size".'
-            if self.current_language == 'de_DE':
-                msg = 'Fluoro konnte nicht durchgeführt werden. Möglicherweiße ist die Größe des Volumens falsch gesetzt. Klicke auf "Phantomgröße setzen".'
+            msg = QCoreApplication.translate('MainWindow', 'Could not perform fluoro. Volume dimensions possibly incorrect. Try clicking in "Set to phantom size".')
             self.msg_window(
                 windowTitle='Error',
                 text=msg,
@@ -270,8 +266,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 icon=self.get_icon('warning')
             )
         else:
-            ##fluoro = scale_mat_from_to(self.fluoro_thread.get_fwd_proj()) # scale to 0 to 255
-            ##self.display_image(self.gV_fwd_proj, fluoro)
             self.gV_fwd_proj.set_image(self.fluoro_thread.get_fwd_proj(), update_values=True)
         for button in [self.pB_fluoro, self.pB_fwd_proj, self.pB_back_proj]:
             button.setDisabled(False)
@@ -288,8 +282,12 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def on_action_set_phantom(self):
         """Gets the phantom file name from a dialog and sets the voxel volume used for the forward projection."""
-        phantom_filename, _ = QFileDialog.getOpenFileName(self.centralwidget, 'Choose phantom file',
-                                                          self.last_opened_dir_phantom, 'Numpy (*.npy;*.npz);;DICOM (*.dcm)')
+        phantom_filename, _ = QFileDialog.getOpenFileName(
+            self.centralwidget,
+            QCoreApplication.translate('MainWindow', 'Choose phantom file'),
+            self.last_opened_dir_phantom,
+            'Numpy (*.npy;*.npz);;DICOM (*.dcm)'
+        )
         if phantom_filename:
             self.last_opened_dir_phantom = os.path.dirname(phantom_filename)
             self.set_phantom_from_file(phantom_filename)
@@ -490,10 +488,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def reset_configuration(self):
         """Reset the CONRAD.xml config file."""
-        msg = 'Initilalising configuration'
-        if self.current_language == 'de_DE':
-            msg = 'Initialisiere Konfiguration'
-        self.statusBar.showMessage(msg)
+        self.statusBar.showMessage(QCoreApplication.translate('MainWindow', 'Initialising configuration'))
         Configuration.initConfig() # conrad config initialisation
         self.load_configuration(filename=self.conrad_xml) # load values into UI elements
         self.statusBar.clearMessage()
@@ -501,11 +496,12 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
     def load_configuration(self, filename=os.path.join(str(pathlib.Path.home()), 'Conrad.xml')):
         """Loads conrad configuration from the Conrad.xml"""
         if not os.path.isfile(filename): # if file does not exist, open file dialog
-            inf = 'Open CONRAD configuration'
-            if self.current_language == 'de_DE':
-                inf = 'CONRAD-Konfiguration öffnen'
-            filename, _ = QFileDialog.getOpenFileName(self.centralwidget, inf,
-                                                      self.last_opened_dir_xml, 'CONRAD (*.xml)')
+            filename, _ = QFileDialog.getOpenFileName(
+                self.centralwidget,
+                QCoreApplication.translate('MainWindow', 'Open CONRAD configuration'),
+                self.last_opened_dir_xml,
+                'CONRAD (*.xml)'
+            )
             if not len(filename):
                 return
             self.last_opened_dir_xml = os.path.dirname(filename)
@@ -543,19 +539,19 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
     def save_configuration(self, filename=os.path.join(str(pathlib.Path.home()), 'Conrad.xml')):
         """Saves the current configuration back to Conrad.xml"""
         if self.sB_sdd.value() <= self.sB_sid.value():
-            txt = 'Source to detector distance must be larger than source to patient distance.'
-            if self.current_language == 'de_DE':
-                txt = 'Abstand Quelle zu Detektor muss größer sein als Abstand Quelle zu Patient'
-            self.msg_window(windowTitle='Error',
-                            text=txt,
-                            icon=self.get_icon('warning'))
+            self.msg_window(
+                windowTitle='Error',
+                text=QCoreApplication.translate('MainWindow', 'Source to detector distance must be larger than source to patient distance.'),
+                icon=self.get_icon('warning')
+            )
             return
         if not filename:
-            inf = 'Save CONRAD configuration as'
-            if self.current_language == 'de_DE':
-                inf = 'CONRAD-Konfiguration speichern unter'
-            filename, _ = QFileDialog.getSaveFileName(self.centralwidget, inf,
-                                                      self.last_opened_dir_xml, 'CONRAD (*.xml)')
+            filename, _ = QFileDialog.getSaveFileName(
+                self.centralwidget,
+                QCoreApplication.translate('MainWindow', 'Save CONRAD configuration as'),
+                self.last_opened_dir_xml,
+                'CONRAD (*.xml)'
+            )
             if not len(filename):
                 return
             self.last_opened_dir_xml = os.path.dirname(filename)
@@ -692,9 +688,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def fwd_project(self):
         """Starts the forward projection thread."""
-        msg = 'Performing forward projection'
-        if self.current_language == 'de_DE':
-            msg = 'Vorwärtsprojektion'
+        msg = QCoreApplication.translate('MainWindow', 'Performing forward projection')
         if self.fwd_proj_slice_by_slice:
             self.statusBar.showMessage('{message}: {current_projection} / {num_projections}'.format(
                 message=msg, current_projection=self.current_fwd_proj_idx+1, num_projections=self.num_proj_mats)
@@ -714,13 +708,9 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         Displays the (current) forward projection and starts the next projection or starts the filtering when the projection is done.
         """
         if len(self.fwd_proj_thread.error):
-            msg = 'Could not perform forward projection.'
+            msg = QCoreApplication.translate('MainWindow', 'Could not perform forward projection.')
             if self.fwd_proj_thread.error['message'] is not None and ('memory' in self.fwd_proj_thread.error['message'] or 'Memory' in self.fwd_proj_thread.error['message']):
-                msg += ' Volume dimensions possibly incorrect. Try clicking in "Set to phantom size".'
-            if self.current_language == 'de_DE':
-                msg = 'Vorwärtsprojektion konnte nicht durchgeführt werden.'
-                if self.fwd_proj_thread.error['message'] is not None and ('memory' in self.fwd_proj_thread.error['message'] or 'Memory' in self.fwd_proj_thread.error['message']):
-                    msg += ' Möglicherweiße ist die Größe des Volumens falsch gesetzt. Klicke auf "Phantomgröße setzen".'
+                msg += QCoreApplication.translate('MainWindow', ' Volume dimensions possibly incorrect. Try clicking in "Set to phantom size".')
             details = ''
             if self.fwd_proj_thread.error['message'] is not None:
                 details += self.fwd_proj_thread['message']
@@ -788,20 +778,15 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             cosine=True,
             ramlak=True
         )
-        msg = 'Filtering projections'
-        if self.current_language == 'de_DE':
-            msg = 'Projektionen werden gefiltert'
-        self.statusBar.showMessage(msg)
+        self.statusBar.showMessage(QCoreApplication.translate('MainWindow', 'Filtering projections'))
         self.filter_thread_cosine.start()
         self.filter_thread_ramlak.start()
         self.filter_thread_cosine_ramlak.start()
 
     def on_filter_finished(self, cosine, ramlak):
+        msg = QCoreApplication.translate('MainWindow', 'Could not filter projections.')
         if cosine and ramlak:
             if len(self.filter_thread_cosine_ramlak.error):
-                msg = 'Could not filter projections.'
-                if self.current_language == 'de_DE':
-                    msg = 'Projektionen konnten nicht gefiltert werden.'
                 details = ''
                 if self.filter_thread_cosine_ramlak.error['message']is not None:
                     details += self.filter_thread_cosine_ramlak.error['message']
@@ -821,9 +806,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.filter_cosine_ramlak_done = True
         elif cosine and not ramlak:
             if len(self.filter_thread_cosine.error):
-                msg = 'Could not filter projections.'
-                if self.current_language == 'de_DE':
-                    msg = 'Projektionen konnten nicht gefiltert werden.'
                 self.msg_window(
                     windowTitle='Error',
                     text=msg,
@@ -838,9 +820,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.filter_cosine_done = True
         elif not cosine and ramlak:
             if len(self.filter_thread_ramlak.error):
-                msg = 'Could not filter projections.'
-                if self.current_language == 'de_DE':
-                    msg = 'Projektionen konnten nicht gefiltert werden.'
                 self.msg_window(
                     windowTitle='Error',
                     text=msg,
@@ -887,14 +866,11 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         jpype.java.lang.System.gc()
         # self.save_configuration(filename=self.conrad_xml)
         if not self.fwd_proj_completed:
-            title = 'Reconstruction not possible'
-            msg = "First perform the forward projection by clicking on 'Scan'"
-            if self.current_language == 'de_DE':
-                title = 'Rekonstruktion nicht möglich'
-                msg = "Führe erst die Vorwärtsprojektion über den Button 'Röntgen' durch"
-            self.msg_window(windowTitle=title,
-                            text=msg,
-                            icon=self.get_icon('warning'))
+            self.msg_window(
+                windowTitle=QCoreApplication.translate('MainWindow', 'Reconstruction not possible'),
+                text=QCoreApplication.translate('MainWindow', "First perform the forward projection by clicking on 'Scan'"),
+                icon=self.get_icon('warning')
+            )
             return
         for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
             button.setDisabled(True)
@@ -919,18 +895,14 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def back_project(self):
         """Starts the back projection thread."""
-        msg = 'Performing backward projection'
-        if self.current_language == 'de_DE':
-            msg = 'Rückprojektion'
+        msg = QCoreApplication.translate('MainWindow', 'Performing backward projection')
         if self.back_proj_slice_by_slice:
-            slice = 'slice'
-            proj = 'projection'
-            if self.current_language == 'de_DE':
-                slice = 'Schicht'
-                proj = 'Projektion'
             self.statusBar.showMessage('{message}: {slice} {current_slice} / {num_slices}, {projection} {current_projection} / {num_projections}'.format(
-                message=msg, slice=slice, current_slice=self.current_back_proj_slice_idx+1, num_slices=self.back_proj.shape[0],
-                projection=proj, current_projection=self.current_back_proj_idx+1, num_projections=self.num_proj_mats
+                message=msg,
+                slice=QCoreApplication.translate('MainWindow', 'slice'),
+                current_slice=self.current_back_proj_slice_idx+1, num_slices=self.back_proj.shape[0],
+                projection=QCoreApplication.translate('MainWindow', 'projection'),
+                current_projection=self.current_back_proj_idx+1, num_projections=self.num_proj_mats
             ))
         else:
             self.statusBar.showMessage(msg)
@@ -940,9 +912,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def on_back_proj_finished(self):
         if len(self.back_proj_thread.error):
-            msg = 'Could not perform back projection.'
-            if self.current_language == 'de_DE':
-                msg = 'Rückprojektion konnte nicht durchgeführt werden'
             details = ''
             if self.back_proj_thread.error['message'] is not None:
                 details += self.back_proj_thread.error['message']
@@ -950,7 +919,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 details += '\n\n'+self.back_proj_thread.error['stacktrace']
             self.msg_window(
                 windowTitle='Error',
-                text=msg,
+                text=QCoreApplication.translate('MainWindow', 'Could not perform back projection.'),
                 detailedText=details,
                 icon=self.get_icon('warning')
             )
@@ -1118,7 +1087,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         Gets the 2D image from the reconstructed volume for the currently selected view: axial / sagittal / coronal.
         """
         if self.plane_mode == self.plane_modes.Axial:
-            # axial view from top to bottom --> access volume from end (-1) to start (0)
+            # axial view from bottom to top --> access volume from end (-1) to start (0)
             # top: anterior, bottom: posterior
             # left: right, right: left
             return np.rot90(self.back_proj[self.back_proj.shape[0] - 1 - slice, :, :], k=-1)
@@ -1142,11 +1111,14 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.scroll_back_proj.setValue(self.timeline_back_proj.currentFrame())
 
     def open_3D_Data(self): # TODO
-        inf = 'Open file'
-        if self.current_language == 'de_DE':
-            inf = 'Datei öffnen'
-        filename, _ = QFileDialog.getOpenFileName(self.centralwidget, inf, self.last_opened_dir_3D,
-                                                  '(*.stl *.ply *.vtp *.obj *.vtk *.vti *.g)')
+        #inf = 'Open file'
+        #if self.current_language == 'de_DE':
+        #    inf = 'Datei öffnen'
+        filename, _ = QFileDialog.getOpenFileName(
+            self.centralwidget, QCoreApplication.translate('MainWindow', 'Open file'),
+            self.last_opened_dir_3D,
+            '(*.stl *.ply *.vtp *.obj *.vtk *.vti *.g)'
+        )
         if not len(filename):
             return
         self.last_opened_dir_3D = os.path.dirname(filename)

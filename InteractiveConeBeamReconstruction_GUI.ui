@@ -938,7 +938,7 @@
       </item>
       <item>
        <widget class="QFrame" name="frame_fwd_proj_btns">
-        <layout class="QVBoxLayout" name="vLayout_scan_btn">
+        <layout class="QVBoxLayout" name="vLayout_scan_btn" stretch="0,0,0">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -1047,6 +1047,12 @@ border: none</string>
          </item>
          <item>
           <layout class="QHBoxLayout" name="hLayout_fwd_proj_btm">
+           <property name="topMargin">
+            <number>8</number>
+           </property>
+           <property name="bottomMargin">
+            <number>8</number>
+           </property>
            <item>
             <widget class="QPushButton" name="pB_fwd_proj_play_pause">
              <property name="sizePolicy">
@@ -1054,6 +1060,9 @@ border: none</string>
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QPushButton{border:0}</string>
              </property>
              <property name="text">
               <string/>
@@ -1195,6 +1204,9 @@ border: none</string>
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QPushButton{border:0}</string>
              </property>
              <property name="text">
               <string/>

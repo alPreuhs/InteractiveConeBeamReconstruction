@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMenu, QAction
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QCoreApplication
 from qimage2ndarray import array2qimage
 import numpy as np
 
@@ -22,12 +22,12 @@ class GraphicsView(QGraphicsView):
         self.context_menu = QMenu()
         self.make_windowing_optional = False
         if self.make_windowing_optional:
-            self.use_windowing_action = QAction('Use Windowing')
+            self.use_windowing_action = QAction(QCoreApplication.translate('MainWindow', 'Use Windowing'))
             self.use_windowing_action.setCheckable(True)
             self.use_windowing_action.setChecked(True)
             self.use_windowing_action.toggled.connect(self.on_use_windowing_action)
             self.context_menu.addAction(self.use_windowing_action)
-        self.reset_window_action = QAction('Reset Window')
+        self.reset_window_action = QAction(QCoreApplication.translate('MainWindow', 'Reset Window'))
         self.reset_window_action.setCheckable(False)
         self.reset_window_action.triggered.connect(self.on_reset_window_action)
         self.context_menu.addAction(self.reset_window_action)
@@ -80,10 +80,6 @@ class GraphicsView(QGraphicsView):
         self.update()
 
     def change_language(self, lang):
-        self.reset_window_action.setText('Reset Window')
-        if lang == 'de_DE':
-            self.reset_window_action.setText('Fenster zurücksetzen')
+        self.reset_window_action.setText(QCoreApplication.translate('MainWindow', 'Reset Window'))
         if self.make_windowing_optional:
-            self.use_windowing_action.setText('Use Windowing')
-            if lang == 'de_DE':
-                self.use_windowing_action.setText('Fenstern verwenden')
+            self.use_windowing_action.setText(QCoreApplication.translate('MainWindow', 'Use Windowing'))
