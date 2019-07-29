@@ -18,18 +18,18 @@ class GraphicsView(QGraphicsView):
         self.window_min, self.window_max = 0, 255
         self.shift = 0
         self.scroll = None
-        self.make_windowing_optional = False
         self.current_language = 'en_GB'
+        self.context_menu = QMenu()
+        self.make_windowing_optional = False
         if self.make_windowing_optional:
             self.use_windowing_action = QAction('Use Windowing')
             self.use_windowing_action.setCheckable(True)
             self.use_windowing_action.setChecked(True)
             self.use_windowing_action.toggled.connect(self.on_use_windowing_action)
-        self.reset_window_action = QAction('Reset Window')
-        self.reset_window_action.triggered.connect(self.on_reset_window_action)
-        self.context_menu = QMenu()
-        if self.make_windowing_optional:
             self.context_menu.addAction(self.use_windowing_action)
+        self.reset_window_action = QAction('Reset Window')
+        self.reset_window_action.setCheckable(False)
+        self.reset_window_action.triggered.connect(self.on_reset_window_action)
         self.context_menu.addAction(self.reset_window_action)
 
     def set_image(self, image, update_values=False):
@@ -71,10 +71,10 @@ class GraphicsView(QGraphicsView):
 
     def on_use_windowing_action(self):
         if not self.use_windowing_action.isChecked():
-            self.on_reset_windowing_action()
+            self.on_reset_window_action()
 
     def on_reset_window_action(self):
-        self.update_values_from_image(self.image)  # TODO: check
+        self.update_values_from_image(self.image)
         self.update()
 
     def change_language(self, lang):
