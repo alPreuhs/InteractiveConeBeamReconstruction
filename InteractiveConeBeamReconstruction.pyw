@@ -6,19 +6,17 @@ import numpy as np
 from enum import Enum
 
 from PyQt5.QtCore import Qt, QTranslator, pyqtSignal, QTimeLine, qFatal
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QGraphicsScene, QMessageBox, QDialog
-from PyQt5.QtGui import QPixmap, QIcon
-from qimage2ndarray import array2qimage
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QMessageBox, QDialog
+from PyQt5.QtGui import QIcon
 from SplashScreen import SplashScreen
 from InteractiveConeBeamReconstruction_GUI import Ui_Interactive_Cone_Beam_Reconstruction
 from VoxelizeWindow import VoxelizeMainWindow, VoxelizeWindow
 
 from include.vtkWindow import vtkWindow
-from include.help_functions import scale_mat_from_to, rot_mat_to_euler, dicom_to_numpy
+from include.help_functions import rot_mat_to_euler, dicom_to_numpy
 from include.Config_XML import Config_XML
 from Math.projection import create_default_projection_matrix, get_rotation_matrix_by_axis_and_angle
 from Math.vtk_proj_matrix import vtk_proj_matrix
-from GraphicsView import GraphicsView
 
 import jpype
 import pyconrad
@@ -39,7 +37,7 @@ from edu.stanford.rsl.conrad.geometry.shapes.simple import PointND
 
 class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction):
     def __init__(self, MainWindow, app):
-        show_splash_screen = False
+        show_splash_screen = True
         if show_splash_screen:
             splash = SplashScreen('splash.gif', Qt.WindowStaysOnTopHint, msg='Loading Interactive Cone Beam Reconstruction...')
         self.debug = False

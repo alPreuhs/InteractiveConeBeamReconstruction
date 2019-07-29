@@ -7,8 +7,6 @@ try:
 except Exception as e:
     from jpype import JException as JavaException
     old_exception_type = False
-
-import time
 import numpy as np
 from edu.stanford.rsl.conrad.data.numeric import Grid2D, Grid3D
 from edu.stanford.rsl.conrad.data.numeric.opencl import OpenCLGrid3D, OpenCLGrid2D
