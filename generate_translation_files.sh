@@ -1,11 +1,4 @@
-#!/bin/bash -x
-bindir=/home/cip/medtech2011/qi55wyqu/ciptmp/FPCTR/InteractiveReconstruction/venv/bin
+#!/bin/bash
+set -x
 langdir=languages
-filename=InteractiveConeBeamReconstruction_GUI
-if type -P "pylupdate5" &>/dev/null; then
-    exe=pylupdate5
-else
-    exe=$bindir/pylupdate5
-fi
-$exe $filename.py -ts $langdir/en_GB.ts
-$exe $filename.py -ts $langdir/de_DE.ts
+pylupdate5 InteractiveConeBeamReconstruction_GUI.py InteractiveConeBeamReconstruction.pyw -ts $langdir/en_GB.ts $langdir/de_DE.ts
