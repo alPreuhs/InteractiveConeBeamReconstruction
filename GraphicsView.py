@@ -47,6 +47,7 @@ class GraphicsView(QGraphicsView):
         self.window_min, self.window_max = image.min() + self.shift, image.max() + self.shift
 
     def update(self):
+        if self.image is None: return
         image = np.interp(np.copy(self.image + self.shift), (self.window_min, self.window_max), (0, 255)).astype(np.uint8)
         self.graphics_scene.removeItem(self.graphics_scene.items()[0])
         self.pixmap_item = QGraphicsPixmapItem(QPixmap(array2qimage(image)))
@@ -61,7 +62,8 @@ class GraphicsView(QGraphicsView):
 
     def wheelEvent(self, event):
         if self.scroll is not None:
-            self.scroll.setValue(self.scroll.value() + event.angleDelta().y() / 4)
+            delta = np.sign(event.angleDelta().y()) # * 0.01 * self.scroll.maximum()
+            self.scroll.setValue(self.scroll.value() + delta)
 
     def resizeEvent(self, event=None):
         self.fitInView(self.pixmap_item.boundingRect(), Qt.KeepAspectRatio)
