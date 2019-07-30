@@ -262,8 +262,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             name, ext = os.path.splitext(filename)
             idx = next((i for (i, d) in enumerate(languages) if d['language'] == name), None)
             if idx is not None: # if first appearance
-                if ext != '.ts': # don't need ts
-                    languages[idx]['ext'].append(ext)
+                languages[idx]['ext'].append(ext)
             else:
                 languages.append({'language': name, 'ext': [ext]}) # add first appearance
         remove = []
