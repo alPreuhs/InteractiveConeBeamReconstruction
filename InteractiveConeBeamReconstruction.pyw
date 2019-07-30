@@ -4,10 +4,11 @@ import pathlib
 import traceback
 import numpy as np
 from enum import Enum
+import functools
 
-from PyQt5.QtCore import Qt, QTranslator, pyqtSignal, QTimeLine, qFatal, QCoreApplication
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QMessageBox, QDialog
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt, QTranslator, pyqtSignal, pyqtSlot, QTimeLine, qFatal, QCoreApplication
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QMessageBox, QDialog, QAction
+from PyQt5.QtGui import QIcon, QImageReader
 from SplashScreen import SplashScreen
 from InteractiveConeBeamReconstruction_GUI import Ui_Interactive_Cone_Beam_Reconstruction
 from VoxelizeWindow import VoxelizeMainWindow, VoxelizeWindow
@@ -40,27 +41,42 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         show_splash_screen = True
         if show_splash_screen:
             splash = SplashScreen('splash.gif', Qt.WindowStaysOnTopHint, msg='Loading Interactive Cone Beam Reconstruction...')
+
+        # traceback is disabled by default, the following reactivates it
+        def excepthook(type_, value, traceback_):
+            traceback.print_exception(type_, value, traceback_)
+            qFatal('')
+
+        sys.excepthook = excepthook
+
         self.debug = False
 
         self.MainWindow = MainWindow
         self.app = app
+
+        # Setup UI, which is created via qt designer and pyuic5
+        #Ui_Interactive_Cone_Beam_Reconstruction().__init__()
+        self.setupUi(self.MainWindow)
+        self.MainWindow.resized.connect(self.resizeEvent)
+
+        # read and connect translation files
+        self.lang_dir = os.path.join('.', 'languages')
+        languages = self.get_languages(lang_dir=self.lang_dir)
+        self.language_actions = []
+        if languages is not None and len(languages):
+            for language in languages:
+                self.language_actions.append(QAction())
+                self.language_actions[-1].setText(language['language'])
+                if len(language['image_file']):
+                    self.language_actions[-1].setIcon(QIcon(language['image_file']))
+                self.menuLanguage.addAction(self.language_actions[-1])
+                self.language_actions[-1].triggered.connect(functools.partial(self.change_language, language['language']))
 
         # install translator
         self.translator = QTranslator()
         self.app.installTranslator(self.translator)
 
         self.init_icons()
-
-        # traceback is disabled by default, the following reactivates it
-        def excepthook(type_, value, traceback_):
-            traceback.print_exception(type_, value, traceback_)
-            qFatal('')
-        sys.excepthook = excepthook
-
-        # Setup UI, which is created via qt designer and pyuic5
-        Ui_Interactive_Cone_Beam_Reconstruction.__init__(self)
-        self.setupUi(self.MainWindow)
-        self.MainWindow.resized.connect(self.resizeEvent)
 
         # Conrad configuration
         self.conrad_xml = os.path.join(str(pathlib.Path.home()), 'Conrad.xml') # config file in home folder
@@ -239,6 +255,42 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.resizeEvent()
 
 
+    def get_languages(self, lang_dir=os.path.join('.', 'languages')):
+        if not os.path.isdir(lang_dir): return None
+        languages = []
+        for filename in os.listdir(lang_dir):
+            name, ext = os.path.splitext(filename)
+            idx = next((i for (i, d) in enumerate(languages) if d['language'] == name), None)
+            if idx is not None: # if first appearance
+                if ext != '.ts': # don't need ts
+                    languages[idx]['ext'].append(ext)
+            else:
+                languages.append({'language': name, 'ext': [ext]}) # add first appearance
+        remove = []
+        for i, lang in enumerate(languages):
+            if '.qm' not in lang['ext']: # don't use if there's no translation file
+                remove.append(i)
+            else:
+                lang['ext'].pop(lang['ext'].index('.qm'))
+                lang['language_file'] = os.path.join(lang_dir, lang['language'] + '.qm')
+        for idx in remove:
+            languages.pop(idx)
+        for lang in languages:
+            remove = []
+            for i, ext in enumerate(lang['ext']):
+                reader = QImageReader(os.path.join(lang_dir, lang['language'] + ext))
+                if not reader.canRead(): # if file is not an image format
+                    remove.append(i)
+            for idx in remove:
+                lang['ext'].pop(idx)
+        for lang in languages:
+            if len(lang['ext']): # if image found
+                lang['image_file'] = os.path.join(lang_dir, lang['language'] + ('.svg' if '.svg' in lang['ext'] else lang['ext'][0]))
+            else:
+                lang['image_file'] = ''
+            lang.pop('ext', None)
+        return languages
+
     def read_config_xml(self, filename):
         if os.path.isfile(filename):
             self.config.read(filename)
@@ -315,9 +367,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         MainWindow.show()
         MainWindow.exec_()
 
+    @pyqtSlot(str)
     def change_language(self, lang: str):
         """Translates the UI to the specified language."""
-        if self.translator.load(os.path.join('languages', lang + '.qm')):
+        if self.translator.load(os.path.join(self.lang_dir, lang + '.qm')):
             self.app.installTranslator(self.translator)
         self.retranslateUi(self.MainWindow)
         self.current_language = lang
@@ -1111,9 +1164,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.scroll_back_proj.setValue(self.timeline_back_proj.currentFrame())
 
     def open_3D_Data(self): # TODO
-        #inf = 'Open file'
-        #if self.current_language == 'de_DE':
-        #    inf = 'Datei öffnen'
         filename, _ = QFileDialog.getOpenFileName(
             self.centralwidget, QCoreApplication.translate('MainWindow', 'Open file'),
             self.last_opened_dir_3D,

@@ -1290,8 +1290,6 @@ border: none</string>
     <property name="title">
      <string>&amp;Language</string>
     </property>
-    <addaction name="action_change_lang_en_GB"/>
-    <addaction name="action_change_lang_de_DE"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">

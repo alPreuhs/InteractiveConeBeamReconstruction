@@ -671,8 +671,6 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.menuFile.addAction(self.action_voxelize)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.action_set_phantom)
-        self.menuLanguage.addAction(self.action_change_lang_en_GB)
-        self.menuLanguage.addAction(self.action_change_lang_de_DE)
         self.menuView.addAction(self.action_show_3D)
         self.menuView.addAction(self.action_show_fwd_proj)
         self.menuView.addAction(self.action_show_back_proj)
