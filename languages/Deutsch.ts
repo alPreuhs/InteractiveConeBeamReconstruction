@@ -215,7 +215,7 @@ N</translation>
     <message>
         <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="741"/>
         <source>slice by slice</source>
-        <translation type="unfinished">Schicht für Schicht</translation>
+        <translation type="obsolete">Schicht für Schicht</translation>
     </message>
     <message>
         <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="742"/>
@@ -367,6 +367,11 @@ O</source>
         <source>&amp;Deutsch</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="741"/>
+        <source>stepwise</source>
+        <translation type="unfinished">Schrittweise</translation>
+    </message>
     <message encoding="UTF-8">
         <location filename="../InteractiveConeBeamReconstruction_GUI.py" line="704"/>
         <source>°</source>
@@ -406,57 +411,57 @@ O</source>
         <translation type="obsolete">Sprache</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="745"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="744"/>
         <source>Performing forward projection</source>
         <translation type="unfinished">Vorwärtsprojektion</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="305"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="304"/>
         <source>Performing Fluoroscopy</source>
         <translation type="unfinished">Fluoro</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="314"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="313"/>
         <source>Could not perform fluoro. Volume dimensions possibly incorrect. Try clicking in &quot;Set to phantom size&quot;.</source>
         <translation>Fluoro konnte nicht durchgeführt werden. Möglicherweiße ist die Größe des Volumens falsch gesetzt. Klicke auf &quot;Phantomgröße setzen&quot;.</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="338"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="337"/>
         <source>Choose phantom file</source>
         <translation type="unfinished">Datei des Phantoms auswählen</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="545"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="544"/>
         <source>Initialising configuration</source>
         <translation>Konfiguration wird initialisiert</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="553"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="552"/>
         <source>Open CONRAD configuration</source>
         <translation>CONRAD-Konfiguration öffnen</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="596"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="595"/>
         <source>Source to detector distance must be larger than source to patient distance.</source>
         <translation type="unfinished">Abstand Quelle zu Detektor muss größer sein als Abstand Quelle zu Patient.</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="603"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="602"/>
         <source>Save CONRAD configuration as</source>
         <translation>CONRAD-Konfiguration speichern unter</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="765"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="764"/>
         <source>Could not perform forward projection.</source>
         <translation>Vorwärtsprojektion konnte nicht durchgeführt werden.</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="767"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="766"/>
         <source> Volume dimensions possibly incorrect. Try clicking in &quot;Set to phantom size&quot;.</source>
         <translation type="unfinished"> Möglicherweiße ist die Größe des Volumens falsch gesetzt. Klicke auf &quot;Phantomgröße setzen&quot;.</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="836"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="835"/>
         <source>Filtering projections</source>
         <translation>Projektionen werden gefiltert</translation>
     </message>
@@ -466,27 +471,27 @@ O</source>
         <translation type="obsolete">Projektionen konnten nicht gefiltert werden.</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="925"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="924"/>
         <source>Reconstruction not possible</source>
         <translation>Rekonstruktion nicht möglich</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="925"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="924"/>
         <source>First perform the forward projection by clicking on &apos;Scan&apos;</source>
         <translation type="unfinished">Führe erst die Vorwärtsprojektion über den Button &apos;Röntgen&apos; durch</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="954"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="952"/>
         <source>Performing backward projection</source>
         <translation type="unfinished">Rückprojektion</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="956"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="955"/>
         <source>slice</source>
-        <translation>Schicht</translation>
+        <translation type="obsolete">Schicht</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="956"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="954"/>
         <source>projection</source>
         <translation>Projektion</translation>
     </message>
@@ -496,17 +501,17 @@ O</source>
         <translation type="obsolete">Rückprojektion konnte nicht durchgeführt werden.</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="1171"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="1163"/>
         <source>Open file</source>
         <translation>Datei öffnen</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="842"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="841"/>
         <source>Could not filter projections.</source>
         <translation type="unfinished">Projektionen konnten nicht gefiltert werden.</translation>
     </message>
     <message>
-        <location filename="../InteractiveConeBeamReconstruction.pyw" line="977"/>
+        <location filename="../InteractiveConeBeamReconstruction.pyw" line="973"/>
         <source>Could not perform back projection.</source>
         <translation type="unfinished">Rückprojektion konnte nicht durchgeführt werden.</translation>
     </message>

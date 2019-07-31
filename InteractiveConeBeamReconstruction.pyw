@@ -935,24 +935,21 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.on_speed_changed()
         self.timeline_back_proj.setFrameRange(0, self.fwd_proj.shape[0] - 1)
         if self.rB_all.isChecked(): # backproject all at once
-            self.back_proj_slice_by_slice = False
+            self.back_proj_stepwise = False
             self.current_back_proj_idx = None
             self.current_back_proj_slice_idx = None
         else: # backproject projection after projection
-            self.back_proj_slice_by_slice = True
+            self.back_proj_stepwise = True
             self.current_back_proj_idx = 0
-            self.current_back_proj_slice_idx = 0
-        self.back_proj_thread.init(fwd_proj=self.fwd_proj_filtered, use_cl=self.cB_use_cl.isChecked(), proj_idx=self.current_back_proj_idx, slice_idx=self.current_back_proj_slice_idx)
+        self.back_proj_thread.init(fwd_proj=self.fwd_proj_filtered, use_cl=self.cB_use_cl.isChecked(), proj_idx=self.current_back_proj_idx)
         self.back_project()
 
     def back_project(self):
         """Starts the back projection thread."""
         msg = QCoreApplication.translate('MainWindow', 'Performing backward projection')
-        if self.back_proj_slice_by_slice:
-            self.statusBar.showMessage('{message}: {slice} {current_slice} / {num_slices}, {projection} {current_projection} / {num_projections}'.format(
+        if self.back_proj_stepwise:
+            self.statusBar.showMessage('{message}: {projection} {current_projection} / {num_projections}'.format(
                 message=msg,
-                slice=QCoreApplication.translate('MainWindow', 'slice'),
-                current_slice=self.current_back_proj_slice_idx+1, num_slices=self.back_proj.shape[0],
                 projection=QCoreApplication.translate('MainWindow', 'projection'),
                 current_projection=self.current_back_proj_idx+1, num_projections=self.num_proj_mats
             ))
@@ -980,24 +977,20 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.statusBar.clearMessage()
             return
         current_reco = self.back_proj_thread.get_back_proj()
-        if self.back_proj_slice_by_slice:
+        if self.back_proj_stepwise:
             self.back_proj = np.add(self.back_proj, current_reco)
         else:
             self.back_proj = current_reco
             self.gV_back_proj.update_values_from_image(self.back_proj)
         self.back_proj_loaded = True
-        if self.back_proj_slice_by_slice:
-            # TODO: show correct plane --> can only show axial slice because of the reconstruction iteration
-            self.gV_back_proj.set_image(self.back_proj[self.current_back_proj_slice_idx], update_values=True)
+        if self.back_proj_stepwise:
+            self.gV_back_proj.update_values_from_image(self.back_proj)
+            self.gV_back_proj.set_image(self.get_image_for_current_view(self.scroll_back_proj.value()), update_values=False)
+            self.scroll_fwd_proj.setValue(self.current_back_proj_idx)
             if self.current_back_proj_idx < self.num_proj_mats - 1:
                 self.current_back_proj_idx += 1
-            else:
-                self.current_back_proj_idx = 0
-                self.current_back_proj_slice_idx += 1
             self.back_proj_thread.proj_idx = self.current_back_proj_idx
-            self.back_proj_thread.slice_idx = self.current_back_proj_slice_idx
-            if self.current_back_proj_idx < self.num_proj_mats - 1 or self.current_back_proj_slice_idx < \
-                    self.fwd_proj.shape[0] - 1:
+            if self.current_back_proj_idx < self.num_proj_mats - 1:
                 self.back_project()
             else:
                 self.gV_back_proj.update_values_from_image(self.back_proj)
@@ -1027,9 +1020,10 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         elif currentText == 'Coronal':
             self.plane_mode = self.plane_modes.Coronal
         frame_max = self.get_back_proj_frame_max()
-        self.gV_back_proj.set_image(self.get_image_for_current_view(slice=0))
-        self.scroll_back_proj.setValue(0)
         self.scroll_back_proj.setMaximum(frame_max)
+        if self.scroll_back_proj.value() >= frame_max:
+            self.scroll_back_proj.setValue(0)
+        self.gV_back_proj.set_image(self.get_image_for_current_view(slice=self.scroll_back_proj.value()))
         self.timeline_back_proj.setFrameRange(0, frame_max)
         self.on_speed_changed(back_proj_frame_max=frame_max)
 

@@ -797,9 +797,9 @@
             </widget>
            </item>
            <item>
-            <widget class="QRadioButton" name="rB_slice">
+            <widget class="QRadioButton" name="rB_stepwise">
              <property name="text">
-              <string>slice by slice</string>
+              <string>stepwise</string>
              </property>
              <property name="checked">
               <bool>false</bool>
