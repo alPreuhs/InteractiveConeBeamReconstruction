@@ -230,8 +230,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.back_proj_completed = False
         self.fwd_proj_playing = False
         self.back_proj_playing = False
-        self.fwd_proj_play_loop = False
-        self.back_proj_play_loop = False
 
         self.perform_reco_after_proj = False
 
@@ -1077,7 +1075,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.pB_fwd_proj_play_pause.setIcon(self.icon_play)
 
     def on_fwd_proj_play_finished(self):
-        if self.fwd_proj_play_loop:
+        if self.config.config['loop_slideshow']:
             self.timeline_fwd_proj.setCurrentTime(0)
             self.timeline_fwd_proj.start()
         else:
@@ -1100,7 +1098,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.pB_back_proj_play_pause.setIcon(self.icon_play)
 
     def on_back_proj_play_finished(self):
-        if self.back_proj_play_loop:
+        if self.config.config['loop_slideshow']:
             self.timeline_back_proj.setCurrentTime(0)
             self.timeline_back_proj.start()
         else:

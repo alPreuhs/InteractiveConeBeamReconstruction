@@ -15,6 +15,7 @@ class Config_XML():
         self.config['mesh_trans'] = np.zeros(3)
         self.config['mesh_scale'] = np.ones(3)
         self.config['mesh_color'] = np.array([0.69411765, 0.47843137, 0.39607843])
+        self.config['loop_slideshow'] = False
 
     def read(self, filename):
         tree = etree.parse(filename)
@@ -25,6 +26,7 @@ class Config_XML():
         self.config['mesh_trans'] = np.fromstring(root.find('MeshTranslation').attrib['value'], sep=' ')
         self.config['mesh_scale'] = np.fromstring(root.find('MeshScale').attrib['value'], sep=' ')
         self.config['mesh_color'] = np.fromstring(root.find('MeshColor').attrib['value'], sep=' ')
+        self.config['loop_slideshow'] = root.find('LoopSlideshow').attrib['value'].lower() == 'true'
 
     def write(self, filename):
         root = etree.Element('InteractiveConeBeamReconstruction', version='0.1')
@@ -34,6 +36,7 @@ class Config_XML():
         etree.SubElement(root, 'MeshTranslation', value=np.array2string(self.config['mesh_trans'])[1:-1])
         etree.SubElement(root, 'MeshScale', value=np.array2string(self.config['mesh_scale'])[1:-1])
         etree.SubElement(root, 'MeshColor', value=np.array2string(self.config['mesh_color'])[1:-1])
+        etree.SubElement(root, 'LoopSlideshow', value="True" if self.config['loop_slideshow'] else "False")
         tree = etree.ElementTree(root)
         tree.write(filename, encoding='utf8', method='xml', pretty_print=True)
 
