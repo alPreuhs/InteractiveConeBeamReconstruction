@@ -198,22 +198,19 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.gV_back_proj.scroll = self.scroll_back_proj
 
         # setup the frame duration for the slide shows
-        self.frame_duration_min = 10
-        self.frame_duration_max = 2000
-        self.sB_speed.setMaximum(6)  # 5 steps
-        self.frame_duration_dt = (self.frame_duration_max - self.frame_duration_min) / (self.sB_speed.maximum() - 1)
-        self.frame_duration = self.frame_duration_max
+        fps_min, fpx_max = 1, 30
+        self.frame_durations = (1000 / np.linspace(fps_min, fpx_max, self.sB_speed.maximum())).astype(np.int)
 
         # setup and connect the time lines for the slide shows
         self.timeline_fwd_proj = QTimeLine()
         self.timeline_fwd_proj.setCurveShape(QTimeLine.LinearCurve)
         self.timeline_fwd_proj.frameChanged.connect(self.display_image_fwd_proj)
-        self.timeline_fwd_proj.finished.connect(self.fwd_proj_play_pause)
+        self.timeline_fwd_proj.finished.connect(self.on_fwd_proj_play_finished)
 
         self.timeline_back_proj = QTimeLine()
         self.timeline_back_proj.setCurveShape(QTimeLine.LinearCurve)
         self.timeline_back_proj.frameChanged.connect(self.display_image_back_proj)
-        self.timeline_back_proj.finished.connect(self.back_proj_play_pause)
+        self.timeline_back_proj.finished.connect(self.on_back_proj_play_finished)
 
         self.timeline_anim = QTimeLine()
         self.timeline_anim.setCurveShape(QTimeLine.LinearCurve)
@@ -791,10 +788,12 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 self.fwd_project()
             else: # done
                 self.gV_fwd_proj.update_values_from_image(self.fwd_proj)
+                self.on_speed_changed()
                 self.statusBar.clearMessage()
                 self.filter_fwd_proj()
         else:
             self.fwd_proj = current_proj
+            self.on_speed_changed()
             self.scroll_fwd_proj.setMaximum(self.fwd_proj.shape[0] - 1)
             self.scroll_fwd_proj.setValue(0)
             self.gV_fwd_proj.update_values_from_image(self.fwd_proj)
@@ -889,6 +888,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         if self.filter_cosine_done and self.filter_ramlak_done and self.filter_cosine_ramlak_done: # all done
             self.fwd_proj_completed = True
             self.on_filter_cB_changed()
+            self.on_speed_changed()
             for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
                 button.setDisabled(False)
             self.statusBar.clearMessage()
@@ -1039,23 +1039,22 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
 
     def on_speed_changed(self):
         """Updates the timeline durations for the slide shows."""
-        if not self.fwd_proj_completed and not self.back_proj_completed:
-            return
         if self.fwd_proj_playing:
             self.timeline_fwd_proj.stop()
         current_val_fwd_proj = self.timeline_fwd_proj.currentValue()
         if self.back_proj_playing:
             self.timeline_back_proj.stop()
         current_val_back_proj = self.timeline_back_proj.currentValue()
-        frame_duration = self.frame_duration_max - ((self.sB_speed.value() - 1) * self.frame_duration_dt)
-        self.timeline_fwd_proj.setDuration(frame_duration * self.fwd_proj_filtered.shape[0])
-        self.timeline_fwd_proj.setUpdateInterval(frame_duration)
-        self.timeline_fwd_proj.setCurrentTime(self.timeline_fwd_proj.duration() * current_val_fwd_proj)
+        frame_duration = self.frame_durations[self.sB_speed.value()-1]
+        if self.fwd_proj_loaded:
+            self.timeline_fwd_proj.setDuration(frame_duration * self.fwd_proj.shape[0])
+            self.timeline_fwd_proj.setUpdateInterval(frame_duration)
+            self.timeline_fwd_proj.setCurrentTime(int(self.timeline_fwd_proj.duration() * current_val_fwd_proj))
         back_proj_frame_max = self.get_back_proj_frame_max()
-        if back_proj_frame_max:
+        if self.back_proj_completed and back_proj_frame_max:
             self.timeline_back_proj.setDuration(frame_duration * back_proj_frame_max)
             self.timeline_back_proj.setUpdateInterval(frame_duration)
-            self.timeline_back_proj.setCurrentTime(self.timeline_back_proj.duration() * current_val_back_proj)
+            self.timeline_back_proj.setCurrentTime(int(self.timeline_back_proj.duration() * current_val_back_proj))
         if self.fwd_proj_playing:
             self.timeline_fwd_proj.resume()
         if self.back_proj_playing:
@@ -1064,10 +1063,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
     def fwd_proj_play_pause(self):
         """Starts / pauses the forward projection slide show."""
         if not self.fwd_proj_loaded:
-            return
-        if self.fwd_proj_play_loop:
-            self.timeline_fwd_proj.setCurrentTime(0)
-            self.timeline_fwd_proj.start()
             return
         self.timeline_fwd_proj.stop()
         self.fwd_proj_playing = not self.fwd_proj_playing
@@ -1081,13 +1076,16 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.timeline_fwd_proj.stop()
             self.pB_fwd_proj_play_pause.setIcon(self.icon_play)
 
+    def on_fwd_proj_play_finished(self):
+        if self.fwd_proj_play_loop:
+            self.timeline_fwd_proj.setCurrentTime(0)
+            self.timeline_fwd_proj.start()
+        else:
+            self.fwd_proj_play_pause()
+
     def back_proj_play_pause(self):
         """Starts / pauses the back projection slide show."""
         if not self.back_proj_loaded:
-            return
-        if self.back_proj_play_loop:
-            self.timeline_back_proj.setCurrentTime(0)
-            self.timeline_back_proj.start()
             return
         self.timeline_back_proj.stop()
         self.back_proj_playing = not self.back_proj_playing
@@ -1100,6 +1098,13 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         else:
             self.timeline_back_proj.stop()
             self.pB_back_proj_play_pause.setIcon(self.icon_play)
+
+    def on_back_proj_play_finished(self):
+        if self.back_proj_play_loop:
+            self.timeline_back_proj.setCurrentTime(0)
+            self.timeline_back_proj.start()
+        else:
+            self.back_proj_play_pause()
 
     def on_scroll_fwd_proj(self):
         """

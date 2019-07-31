@@ -1167,6 +1167,9 @@ N</string>
            <property name="maximum">
             <number>6</number>
            </property>
+           <property name="value">
+            <number>3</number>
+           </property>
           </widget>
          </item>
         </layout>

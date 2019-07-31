@@ -557,6 +557,7 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.sB_speed.setMinimumSize(QtCore.QSize(0, 23))
         self.sB_speed.setMinimum(1)
         self.sB_speed.setMaximum(6)
+        self.sB_speed.setProperty("value", 3)
         self.sB_speed.setObjectName("sB_speed")
         self.vLayout_reco_btn.addWidget(self.sB_speed)
         self.hLayout_reco.addWidget(self.frame_back_proj_btns)
