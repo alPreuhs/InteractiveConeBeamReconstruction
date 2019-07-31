@@ -1025,7 +1025,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.scroll_back_proj.setValue(0)
         self.gV_back_proj.set_image(self.get_image_for_current_view(slice=self.scroll_back_proj.value()))
         self.timeline_back_proj.setFrameRange(0, frame_max)
-        self.on_speed_changed(back_proj_frame_max=frame_max)
+        self.on_speed_changed()
 
     def get_back_proj_frame_max(self):
         if not self.back_proj_loaded: # if not self.back_proj_completed
@@ -1037,7 +1037,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         elif self.plane_mode == self.plane_modes.Coronal:
             return self.back_proj.shape[2] - 1
 
-    def on_speed_changed(self, back_proj_frame_max=None):
+    def on_speed_changed(self):
         """Updates the timeline durations for the slide shows."""
         if not self.fwd_proj_completed and not self.back_proj_completed:
             return
@@ -1051,11 +1051,11 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.timeline_fwd_proj.setDuration(frame_duration * self.fwd_proj_filtered.shape[0])
         self.timeline_fwd_proj.setUpdateInterval(frame_duration)
         self.timeline_fwd_proj.setCurrentTime(self.timeline_fwd_proj.duration() * current_val_fwd_proj)
-        if back_proj_frame_max is None:
-            back_proj_frame_max = self.get_back_proj_frame_max()
-        self.timeline_back_proj.setDuration(frame_duration * back_proj_frame_max)
-        self.timeline_back_proj.setUpdateInterval(frame_duration)
-        self.timeline_back_proj.setCurrentTime(self.timeline_back_proj.duration() * current_val_back_proj)
+        back_proj_frame_max = self.get_back_proj_frame_max()
+        if back_proj_frame_max:
+            self.timeline_back_proj.setDuration(frame_duration * back_proj_frame_max)
+            self.timeline_back_proj.setUpdateInterval(frame_duration)
+            self.timeline_back_proj.setCurrentTime(self.timeline_back_proj.duration() * current_val_back_proj)
         if self.fwd_proj_playing:
             self.timeline_fwd_proj.resume()
         if self.back_proj_playing:
