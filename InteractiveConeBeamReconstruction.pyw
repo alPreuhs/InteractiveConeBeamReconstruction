@@ -1051,7 +1051,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.timeline_fwd_proj.setUpdateInterval(frame_duration)
             self.timeline_fwd_proj.setCurrentTime(int(self.timeline_fwd_proj.duration() * current_val_fwd_proj))
         back_proj_frame_max = self.get_back_proj_frame_max()
-        if self.back_proj_completed and back_proj_frame_max:
+        if self.back_proj_loaded and back_proj_frame_max:
             self.timeline_back_proj.setDuration(frame_duration * back_proj_frame_max)
             self.timeline_back_proj.setUpdateInterval(frame_duration)
             self.timeline_back_proj.setCurrentTime(int(self.timeline_back_proj.duration() * current_val_back_proj))
