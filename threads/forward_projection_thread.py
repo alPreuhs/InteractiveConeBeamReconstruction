@@ -17,12 +17,11 @@ from edu.stanford.rsl.tutorial.cone import ConeBeamProjector
 class forwardProjectionThread(QThread):
     fwd_proj_finished = pyqtSignal(str)
 
-    def init(self, phantom, spacing=[1,1,1], proj_idx=None, use_cl=True, parent=None):
+    def init(self, phantom, spacing=None, proj_idx=None, use_cl=True):
         self.use_cl = use_cl
         self.phantom = Grid3D.from_numpy(phantom)
-        self.phantom.setSpacing(JArray(JDouble)(list(spacing)))
+        self.phantom.setSpacing(JArray(JDouble)(list(spacing if spacing is not None else [1,1,1])))
         self.proj_idx = int(proj_idx) if proj_idx is not None else proj_idx
-        self.parent = parent
         self.error = ''
 
     def get_fwd_proj(self):
