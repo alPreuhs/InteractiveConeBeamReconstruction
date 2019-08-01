@@ -760,7 +760,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 msg += QCoreApplication.translate('MainWindow', ' Volume dimensions possibly incorrect. Try clicking in "Set to phantom size".')
             details = ''
             if self.fwd_proj_thread.error['message'] is not None:
-                details += self.fwd_proj_thread['message']
+                details += self.fwd_proj_thread.error['message']
             if self.fwd_proj_thread.error['stacktrace'] is not None:
                 details += '\n\n'+self.fwd_proj_thread.error['stacktrace']
             self.msg_window(
