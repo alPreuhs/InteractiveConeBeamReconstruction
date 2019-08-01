@@ -298,7 +298,9 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         msg = QCoreApplication.translate('MainWindow', 'Performing Fluoroscopy')
         self.statusBar.showMessage(msg)
         self.save_configuration(filename=self.conrad_xml)
-        self.fluoro_thread.init(phantom=self.phantom, proj_idx=0, use_cl=self.cB_use_cl.isChecked(), parent=self)
+        geo = self.conrad_config.getGeometry()
+        spacing = [geo.getVoxelSpacingX(), geo.getVoxelSpacingY(), geo.getVoxelSpacingZ()]
+        self.fluoro_thread.init(phantom=self.phantom, proj_idx=0, use_cl=self.cB_use_cl.isChecked(), spacing=spacing)
         self.fluoro_thread.start()
 
     def on_fluoro_finished(self):
