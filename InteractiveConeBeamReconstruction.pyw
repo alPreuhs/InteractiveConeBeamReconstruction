@@ -9,6 +9,7 @@ import functools
 from PyQt5.QtCore import Qt, QTranslator, pyqtSignal, pyqtSlot, QTimeLine, qFatal, QCoreApplication
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsPixmapItem, QMessageBox, QDialog, QAction
 from PyQt5.QtGui import QIcon, QImageReader
+import resources
 from SplashScreen import SplashScreen
 from InteractiveConeBeamReconstruction_GUI import Ui_Interactive_Cone_Beam_Reconstruction
 from VoxelizeWindow import VoxelizeMainWindow, VoxelizeWindow
@@ -75,8 +76,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         # install translator
         self.translator = QTranslator()
         self.app.installTranslator(self.translator)
-
-        self.init_icons()
 
         # Conrad configuration
         self.conrad_xml = os.path.join(str(pathlib.Path.home()), 'Conrad.xml') # config file in home folder
@@ -166,10 +165,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.pB_set_reco_dim.clicked.connect(lambda _: self.set_reco_dim(x=None, y=None, z=None))
         self.pB_fluoro.clicked.connect(self.on_pB_fluoro)
 
-        # play / pause icons
-        self.icon_play = self.get_icon('play')
-        self.icon_pause = self.get_icon('pause')
-
         # combo box for axial / sagittal / coronal plane views
         self.comboBox_plane_sel.currentTextChanged.connect(self.on_plane_sel_changed)
 
@@ -249,7 +244,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.MainWindow.showMaximized()
         self.resizeEvent()
 
-
     def get_languages(self, lang_dir=os.path.join('.', 'languages')):
         if not os.path.isdir(lang_dir): return None
         languages = []
@@ -311,7 +305,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 windowTitle='Error',
                 text=msg,
                 detailedText=self.fluoro_thread.error['message']+'\n\n'+self.fluoro_thread.error['stacktrace'],
-                icon=self.get_icon('warning')
+                icon=QIcon(':/icons/warning')
             )
         else:
             self.gV_fwd_proj.set_image(self.fluoro_thread.get_fwd_proj(), update_values=True)
@@ -385,29 +379,6 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         if len(detailedText):
             msgWindow.setDetailedText(detailedText)
         msgWindow.exec_()
-
-    def init_icons(self):
-        self.iconPath = 'icons'
-        # dictionary with icon filenames so they only need to be changed once
-        self.icons = {}
-        self.icons['play'] = 'play.svg'
-        self.icons['pause'] = 'pause.svg'
-        self.icons['app'] = 'window_icon.svg'
-        self.icons['save'] = 'save.svg'
-        self.icons['open'] = 'open.svg'
-        self.icons['print'] = 'print.svg'
-        self.icons['close'] = 'close.svg'
-        self.icons['manual'] = 'manual.svg'
-        self.icons['settings'] = 'settings_1.svg'
-        self.icons['warning'] = 'warning.svg'
-        self.icons['file warning'] = 'file_warning.svg'
-        self.icons['file not found'] = 'file_x.svg'
-
-    def get_icon(self, name: str):
-        """Gets the QIcon for the specified name if its in the icons dictionary."""
-        iconFilename = self.icons[name] if name in self.icons.keys() else 'blank.svg'
-        iconFilename = os.path.join(os.path.dirname(os.path.realpath(__file__)), self.iconPath, iconFilename)
-        return QIcon(iconFilename) if os.path.isfile(iconFilename) else QIcon()
 
     def reset_view(self):
         """Resets the view of the VTK widget."""
@@ -591,7 +562,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.msg_window(
                 windowTitle='Error',
                 text=QCoreApplication.translate('MainWindow', 'Source to detector distance must be larger than source to patient distance.'),
-                icon=self.get_icon('warning')
+                icon=QIcon(':/icons/warning')
             )
             return
         if not filename:
@@ -769,7 +740,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 windowTitle='Error',
                 text=msg,
                 detailedText=details,
-                icon=self.get_icon('warning')
+                icon=QIcon(':/icons/warning')
             )
             for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
                 button.setDisabled(False)
@@ -847,7 +818,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                     windowTitle='Error',
                     text=msg,
                     detailedText=details,
-                    icon=self.get_icon('warning')
+                    icon=QIcon(':/icons/warning')
                 )
                 for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
                     button.setDisabled(False)
@@ -861,7 +832,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                     windowTitle='Error',
                     text=msg,
                     detailedText=self.filter_thread_cosine.error['message'] + '\n\n' + self.filter_thread_cosine.error['stacktrace'],
-                    icon=self.get_icon('warning')
+                    icon=QIcon(':/icons/warning')
                 )
                 for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
                     button.setDisabled(False)
@@ -875,7 +846,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                     windowTitle='Error',
                     text=msg,
                     detailedText=self.filter_thread_ramlak.error['message'] + '\n\n' + self.filter_thread_ramlak.error['stacktrace'],
-                    icon=self.get_icon('warning')
+                    icon=QIcon(':/icons/warning')
                 )
                 for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
                     button.setDisabled(False)
@@ -921,7 +892,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             self.msg_window(
                 windowTitle=QCoreApplication.translate('MainWindow', 'Reconstruction not possible'),
                 text=QCoreApplication.translate('MainWindow', "First perform the forward projection by clicking on 'Scan'"),
-                icon=self.get_icon('warning')
+                icon=QIcon(':/icons/warning')
             )
             return
         for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
@@ -970,7 +941,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
                 windowTitle='Error',
                 text=QCoreApplication.translate('MainWindow', 'Could not perform back projection.'),
                 detailedText=details,
-                icon=self.get_icon('warning')
+                icon=QIcon(':/icons/warning')
             )
             for button in [self.pB_fwd_proj, self.pB_fluoro, self.pB_back_proj]:
                 button.setDisabled(False)
@@ -1067,14 +1038,14 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.timeline_fwd_proj.stop()
         self.fwd_proj_playing = not self.fwd_proj_playing
         if self.fwd_proj_playing:
-            self.pB_fwd_proj_play_pause.setIcon(self.icon_pause)
+            self.pB_fwd_proj_play_pause.setIcon(QIcon(':/icons/pause'))
             if self.timeline_fwd_proj.currentValue() == 1.0:  # finished
                 self.timeline_fwd_proj.start()
             else:
                 self.timeline_fwd_proj.resume()
         else:
             self.timeline_fwd_proj.stop()
-            self.pB_fwd_proj_play_pause.setIcon(self.icon_play)
+            self.pB_fwd_proj_play_pause.setIcon(QIcon(':/icons/play'))
 
     def on_fwd_proj_play_finished(self):
         if self.config.config['loop_slideshow']:
@@ -1090,14 +1061,14 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.timeline_back_proj.stop()
         self.back_proj_playing = not self.back_proj_playing
         if self.back_proj_playing:
-            self.pB_back_proj_play_pause.setIcon(self.icon_pause)
+            self.pB_back_proj_play_pause.setIcon(QIcon(':/icons/pause'))
             if self.timeline_back_proj.currentValue() == 1.0:  # finished
                 self.timeline_back_proj.start()
             else:
                 self.timeline_back_proj.resume()
         else:
             self.timeline_back_proj.stop()
-            self.pB_back_proj_play_pause.setIcon(self.icon_play)
+            self.pB_back_proj_play_pause.setIcon(QIcon(':/icons/play'))
 
     def on_back_proj_play_finished(self):
         if self.config.config['loop_slideshow']:

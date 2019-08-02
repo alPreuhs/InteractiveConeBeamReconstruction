@@ -1310,8 +1310,7 @@ border: none</string>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_open_3D_data">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/open.svg</normaloff>icons/open.svg</iconset>
+    <iconset theme=":/icons/open"/>
    </property>
    <property name="text">
     <string>&amp;Open 3D Data</string>
@@ -1321,27 +1320,18 @@ border: none</string>
    </property>
   </action>
   <action name="action_change_lang_en_GB">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/Flag_UK.svg</normaloff>icons/Flag_UK.svg</iconset>
-   </property>
    <property name="text">
     <string>&amp;English</string>
    </property>
   </action>
   <action name="action_change_lang_de_DE">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/Flag_Germany.svg</normaloff>icons/Flag_Germany.svg</iconset>
-   </property>
    <property name="text">
     <string>&amp;Deutsch</string>
    </property>
   </action>
   <action name="action_load_config">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/open.svg</normaloff>icons/open.svg</iconset>
+    <iconset theme=":/icons/open"/>
    </property>
    <property name="text">
     <string>&amp;Load Configuration</string>
@@ -1349,8 +1339,7 @@ border: none</string>
   </action>
   <action name="action_save_config">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/save.svg</normaloff>icons/save.svg</iconset>
+    <iconset theme=":/icons/save"/>
    </property>
    <property name="text">
     <string>&amp;Save Configuration as...</string>
@@ -1358,8 +1347,7 @@ border: none</string>
   </action>
   <action name="action_voxelize">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/voxels.svg</normaloff>icons/voxels.svg</iconset>
+    <iconset theme=":/icons/voxelize"/>
    </property>
    <property name="text">
     <string>Voxelize Mesh</string>
