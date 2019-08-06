@@ -1,5 +1,8 @@
 jpype1 == 0.7
 pyconrad >= 0.6.6
+PyQt5 >= 5.13.0
 numpy >= 1.16.2
+vtk >= 8.1.2
 qimage2ndarray >= 1.8
+pathlib >= 1.0.1
 mesh_vox >= 0.1.0 # pip install git+https://github.com/Septaris/mesh_vox.git
