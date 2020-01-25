@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'InteractiveConeBeamReconstruction_GUI.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Interactive_Cone_Beam_Reconstruction(object):
     def setupUi(self, Interactive_Cone_Beam_Reconstruction):
@@ -614,6 +616,8 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.menuLanguage.setObjectName("menuLanguage")
         self.menuView = QtWidgets.QMenu(self.menubar)
         self.menuView.setObjectName("menuView")
+        self.menuCredits = QtWidgets.QMenu(self.menubar)
+        self.menuCredits.setObjectName("menuCredits")
         Interactive_Cone_Beam_Reconstruction.setMenuBar(self.menubar)
         self.statusBar = QtWidgets.QStatusBar(Interactive_Cone_Beam_Reconstruction)
         self.statusBar.setObjectName("statusBar")
@@ -656,6 +660,8 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.action_show_config.setCheckable(True)
         self.action_show_config.setChecked(True)
         self.action_show_config.setObjectName("action_show_config")
+        self.action_credits = QtWidgets.QAction(Interactive_Cone_Beam_Reconstruction)
+        self.action_credits.setObjectName("action_credits")
         self.menuFile.addAction(self.action_open_3D_data)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.action_load_config)
@@ -668,9 +674,11 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.menuView.addAction(self.action_show_fwd_proj)
         self.menuView.addAction(self.action_show_back_proj)
         self.menuView.addAction(self.action_show_config)
+        self.menuCredits.addAction(self.action_credits)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuLanguage.menuAction())
+        self.menubar.addAction(self.menuCredits.menuAction())
 
         self.retranslateUi(Interactive_Cone_Beam_Reconstruction)
         self.config_tabs.setCurrentIndex(1)
@@ -770,6 +778,7 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.menuFile.setTitle(_translate("Interactive_Cone_Beam_Reconstruction", "File"))
         self.menuLanguage.setTitle(_translate("Interactive_Cone_Beam_Reconstruction", "&Language"))
         self.menuView.setTitle(_translate("Interactive_Cone_Beam_Reconstruction", "View"))
+        self.menuCredits.setTitle(_translate("Interactive_Cone_Beam_Reconstruction", "Credits"))
         self.action_open_3D_data.setText(_translate("Interactive_Cone_Beam_Reconstruction", "&Open 3D Data"))
         self.action_open_3D_data.setShortcut(_translate("Interactive_Cone_Beam_Reconstruction", "Ctrl+O"))
         self.action_change_lang_en_GB.setText(_translate("Interactive_Cone_Beam_Reconstruction", "&English"))
@@ -782,8 +791,9 @@ class Ui_Interactive_Cone_Beam_Reconstruction(object):
         self.action_show_fwd_proj.setText(_translate("Interactive_Cone_Beam_Reconstruction", "Projection"))
         self.action_show_back_proj.setText(_translate("Interactive_Cone_Beam_Reconstruction", "Backprojection"))
         self.action_show_config.setText(_translate("Interactive_Cone_Beam_Reconstruction", "Configuration"))
-
+        self.action_credits.setText(_translate("Interactive_Cone_Beam_Reconstruction", "Credits"))
 from GraphicsView import GraphicsView
+
 
 if __name__ == "__main__":
     import sys
@@ -793,4 +803,3 @@ if __name__ == "__main__":
     ui.setupUi(Interactive_Cone_Beam_Reconstruction)
     Interactive_Cone_Beam_Reconstruction.show()
     sys.exit(app.exec_())
-

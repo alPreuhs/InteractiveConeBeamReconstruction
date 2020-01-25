@@ -13,6 +13,7 @@ import resources
 from SplashScreen import SplashScreen
 from InteractiveConeBeamReconstruction_GUI import Ui_Interactive_Cone_Beam_Reconstruction
 from VoxelizeWindow import VoxelizeMainWindow, VoxelizeWindow
+from credits import Credits
 
 from include.vtkWindow import vtkWindow
 from include.help_functions import rot_mat_to_euler, dicom_to_numpy
@@ -147,6 +148,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.action_show_fwd_proj.triggered.connect(self.on_action_show_fwd_proj)
         self.action_show_back_proj.triggered.connect(self.on_action_show_back_proj)
         self.action_show_config.triggered.connect(self.on_action_show_config_tabs)
+        self.action_credits.triggered.connect(self.on_action_credits)
 
         # connect (horizontal) scroll bars
         self.scroll_fwd_proj.sliderMoved.connect(self.on_scroll_fwd_proj)
@@ -321,6 +323,7 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
         self.sB_reco_dim_x.setValue(x)
         self.sB_reco_dim_y.setValue(y)
         self.sB_reco_dim_z.setValue(z)
+        QApplication.processEvents()
 
     def on_action_set_phantom(self):
         """Gets the phantom file name from a dialog and sets the voxel volume used for the forward projection."""
@@ -490,9 +493,9 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             elif rot == 180:
                 self.label_angles.setText('LAO/RAO: 180°\tCRAN/CAUD: 0°')
             elif rot < 180:
-                self.label_angles.setText('RAO: {}°\tCRAN/CAUD: 0°'.format(rot))
+                self.label_angles.setText('LAO: {}°\tCRAN/CAUD: 0°'.format(rot))
             else:
-                self.label_angles.setText('LAO: {}°\tCRAN/CAUD: 0°'.format(360-rot))
+                self.label_angles.setText('RAO: {}°\tCRAN/CAUD: 0°'.format(360-rot))
             rot -= 90 # like Conrad proj mats!? start from x-axis not y-axis!?
             pmat = create_default_projection_matrix(
                 rao_lao_ang=rot,
@@ -1195,6 +1198,13 @@ class InteractiveConeBeamReconstruction(Ui_Interactive_Cone_Beam_Reconstruction)
             for s in [False, True]:
                 self.show_back_proj(s)
 
+    def on_action_credits(self):
+        creds = Credits()
+        if creds.exec_():
+            return
+        else:
+            return
+
     def resizeEvent(self):
         self.gV_fwd_proj.resizeEvent()
         self.gV_back_proj.resizeEvent()
@@ -1215,13 +1225,14 @@ class Window(QMainWindow):
         return super(Window, self).resizeEvent(event)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_F11:
+        key = event.key()
+        if key == Qt.Key_F11:
             if self.isFullScreen():
                 self.showNormal()
             else:
                 self.showFullScreen()
             event.accept()
-        elif event.key() == Qt.Key_Escape and self.isFullScreen():
+        elif key == Qt.Key_Escape and self.isFullScreen():
             self.showNormal()
             event.accept()
         #elif event.key() == Qt.Key_Alt:

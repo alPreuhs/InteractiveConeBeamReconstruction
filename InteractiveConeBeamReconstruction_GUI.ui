@@ -1303,14 +1303,22 @@ border: none</string>
     <addaction name="action_show_back_proj"/>
     <addaction name="action_show_config"/>
    </widget>
+   <widget class="QMenu" name="menuCredits">
+    <property name="title">
+     <string>Credits</string>
+    </property>
+    <addaction name="action_credits"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
    <addaction name="menuLanguage"/>
+   <addaction name="menuCredits"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_open_3D_data">
    <property name="icon">
-    <iconset theme=":/icons/open"/>
+    <iconset theme=":/icons/open">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Open 3D Data</string>
@@ -1331,7 +1339,8 @@ border: none</string>
   </action>
   <action name="action_load_config">
    <property name="icon">
-    <iconset theme=":/icons/open"/>
+    <iconset theme=":/icons/open">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Load Configuration</string>
@@ -1339,7 +1348,8 @@ border: none</string>
   </action>
   <action name="action_save_config">
    <property name="icon">
-    <iconset theme=":/icons/save"/>
+    <iconset theme=":/icons/save">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Save Configuration as...</string>
@@ -1347,7 +1357,8 @@ border: none</string>
   </action>
   <action name="action_voxelize">
    <property name="icon">
-    <iconset theme=":/icons/voxelize"/>
+    <iconset theme=":/icons/voxelize">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Voxelize Mesh</string>
@@ -1400,6 +1411,11 @@ border: none</string>
    </property>
    <property name="text">
     <string>Configuration</string>
+   </property>
+  </action>
+  <action name="action_credits">
+   <property name="text">
+    <string>Credits</string>
    </property>
   </action>
  </widget>
