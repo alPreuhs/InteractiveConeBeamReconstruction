@@ -25,7 +25,7 @@ file.
 pythonw InteractiveConeBeamReconstruction.pyw
 ```
 
-## Required packages
+## Required Packages
 * [jpype1](https://github.com/jpype-project/jpype) == 0.7
 * [pyconrad](https://git5.cs.fau.de/PyConrad/pyCONRAD) >= 0.6.6
 * [PyQt5](https://pypi.org/project/PyQt5/) >= 5.13.0
@@ -37,7 +37,7 @@ pythonw InteractiveConeBeamReconstruction.pyw
 Install using ````pip install -r requirements.txt````
 
 
-## Add translation
+## Add Translation
 1. Run ````python generate_translation_files.py NameOfNewLanguage````
 2. Translate using Qt Linguist
 3. Run ````python generate_translation_files.py````

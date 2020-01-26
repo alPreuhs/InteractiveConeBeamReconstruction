@@ -1,7 +1,6 @@
 import math
 import numpy as np
 import vtk
-import pytiff
 import pydicom
 
 def scale_mat_from_to(mat, from_min=None, from_max=None, to_min=0, to_max=255, dtype=np.uint8):
@@ -40,6 +39,7 @@ def turn_upside_down(array):
 
 
 def multi_tiff_to_numpy(filename):
+    import pytiff
     with pytiff.Tiff(filename) as handle:
         arr = np.ndarray(shape=(handle.number_of_pages, handle.shape[0], handle.shape[1]), dtype=handle.dtype)
         for i, page in enumerate(handle.pages):

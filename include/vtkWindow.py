@@ -1,10 +1,10 @@
 import numpy as np
 import vtk
 from PyQt5 import QtWidgets
-from dependency.InteractorStyle import InteractorStyle
-from dependency.RenderWindowInteractor import *
+from include.InteractorStyle import InteractorStyle
+from include.RenderWindowInteractor import *
 from include import help_functions
-from os.path import splitext, isfile, join
+from os.path import splitext
 import random
 
 
