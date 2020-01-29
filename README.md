@@ -69,7 +69,7 @@ The app has been tested to work under the following environments:
     <td>macOS 10.15</td> 
     <td>3.7</td> 
     <td>Java SE 12.0.1</td>
-    <td>0.6.6</td>
+    <td>0.7.4</td>
 </tr>
 </table>
 
