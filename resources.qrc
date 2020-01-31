@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/icons">
+        <file alias="open">icons/open.svg</file>
+        <file alias="save">icons/save.svg</file>
+        <file alias="play">icons/play.svg</file>
+        <file alias="pause">icons/pause.svg</file>
+        <file alias="voxelize">icons/voxels.svg</file>
+        <file alias="warning">icons/warning.svg</file>
+    </qresource>
+</RCC>
